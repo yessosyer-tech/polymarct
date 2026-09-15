@@ -1,0 +1,98 @@
+/* POLYMARCT / motion stage
+   Fixed 1920x1080, scaled to the viewport. Everything inside the stage is
+   authored at true pixel size, so a screen capture is 1:1. */
+
+:root{
+  --black:#08090A; --graphite:#0D0F11; --surface:#121417; --surface-2:#171A1E;
+  --white:#F2EFE9; --muted:#8A8F94; --dim:#5C6166;
+  --acid:#CCFF00; --blue:#2F6BFF; --no:#FF4D2E;
+  --line:rgba(242,239,233,.10); --line-strong:rgba(242,239,233,.22);
+  --sans:"Inter Tight","Inter",-apple-system,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+body{font-family:var(--sans);color:var(--white);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+
+#stage{
+  position:fixed;left:50%;top:50%;width:1920px;height:1080px;
+  transform-origin:50% 50%;background:var(--black);overflow:hidden;
+  box-shadow:0 0 0 1px rgba(242,239,233,.06);
+}
+.layer{position:absolute;inset:0}
+canvas.layer{width:1920px;height:1080px}
+
+/* ---------- film treatment ---------- */
+.grain{pointer-events:none;opacity:.22;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  animation:grainshift .9s steps(3) infinite}
+@keyframes grainshift{0%{transform:translate(0,0)}33%{transform:translate(-6px,4px)}66%{transform:translate(5px,-5px)}}
+
+.scan{pointer-events:none;opacity:.16;
+  background:repeating-linear-gradient(to bottom,rgba(242,239,233,.08) 0 1px,transparent 1px 4px)}
+
+.vig{pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 32%,rgba(0,0,0,.72) 100%)}
+
+.flash{pointer-events:none;background:var(--acid);opacity:0;mix-blend-mode:screen}
+
+/* ---------- type primitives ---------- */
+.t{position:absolute;white-space:nowrap;will-change:transform,opacity,clip-path}
+.display{font-size:190px;font-weight:600;letter-spacing:-9px;line-height:.84;text-transform:uppercase}
+.h1{font-size:112px;font-weight:600;letter-spacing:-5px;line-height:.88;text-transform:uppercase}
+.h2{font-size:64px;font-weight:600;letter-spacing:-2.6px;line-height:.94}
+.h3{font-size:38px;font-weight:500;letter-spacing:-1.2px}
+.mono{font-family:var(--mono);font-weight:500}
+.eyebrow{font-family:var(--mono);font-size:19px;letter-spacing:6px;text-transform:uppercase;color:var(--muted)}
+.big-num{font-size:300px;font-weight:600;letter-spacing:-16px;line-height:.8}
+.acid{color:var(--acid)} .muted{color:var(--muted)} .no{color:var(--no)} .blue{color:var(--blue)}
+
+/* a wipe reveal that respects the grid, never a fade-in blob */
+.wipe{clip-path:inset(0 100% 0 0)}
+.wipe-up{clip-path:inset(100% 0 0 0)}
+
+/* chromatic split, used for one frame at a hard cut */
+.split{text-shadow:-3px 0 rgba(204,255,0,.9),3px 0 rgba(47,107,255,.9)}
+
+/* ---------- UI primitives, same language as the product ---------- */
+.card{position:absolute;background:var(--black);border:1px solid var(--line);padding:26px;width:430px;
+  box-shadow:0 44px 90px rgba(0,0,0,.72),0 8px 22px rgba(0,0,0,.5);will-change:transform,opacity}
+.card .cat{font-family:var(--mono);font-size:14px;letter-spacing:3.4px;color:var(--dim);text-transform:uppercase}
+.card .q{font-size:25px;line-height:1.2;letter-spacing:-.6px;margin:16px 0 20px;white-space:normal}
+.card .p{font-size:62px;font-weight:600;letter-spacing:-3px;line-height:1}
+.card .legs{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);margin-top:18px}
+.card .leg{background:var(--surface);padding:13px 15px;display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:15px;letter-spacing:1.6px}
+.card .meta{display:flex;gap:16px;font-family:var(--mono);font-size:13px;letter-spacing:2px;color:var(--dim);
+  border-top:1px solid var(--line);padding-top:14px;margin-top:18px;text-transform:uppercase}
+
+.panel{position:absolute;background:var(--graphite);border:1px solid var(--line-strong);padding:28px;
+  box-shadow:0 50px 100px rgba(0,0,0,.8)}
+.panel-h{font-family:var(--mono);font-size:14px;letter-spacing:4px;color:var(--dim);text-transform:uppercase;
+  display:flex;justify-content:space-between;margin-bottom:20px}
+.kv{display:flex;justify-content:space-between;gap:26px;padding:12px 0;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:17px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted);font-size:14px;letter-spacing:2.4px;text-transform:uppercase}
+
+.chip{font-family:var(--mono);font-size:13px;letter-spacing:3px;text-transform:uppercase;padding:7px 11px;
+  border:1px solid var(--line-strong);color:var(--muted)}
+.chip.on{background:var(--acid);color:#000;border-color:var(--acid);font-weight:700}
+
+.bar{height:6px;background:var(--surface-2);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--acid)}
+
+.rule{position:absolute;height:1px;background:var(--line-strong);transform-origin:0 50%}
+
+/* ---------- transport ---------- */
+.transport{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;
+  background:rgba(8,9,10,.92);border:1px solid var(--line-strong);padding:10px 14px;z-index:99;
+  font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--muted);backdrop-filter:blur(8px)}
+.transport.gone{display:none}
+.transport button{font:inherit;color:var(--white);background:none;border:1px solid var(--line-strong);
+  padding:7px 12px;cursor:pointer;letter-spacing:2px}
+.transport button:hover{border-color:var(--white)}
+.transport .scrub{width:280px;height:4px;background:var(--surface-2);cursor:pointer;position:relative}
+.transport .scrub i{position:absolute;inset:0 auto 0 0;background:var(--acid)}
+.transport .hint{color:var(--dim)}

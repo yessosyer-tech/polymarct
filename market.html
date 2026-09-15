@@ -9,7 +9,6 @@
 <meta name="theme-color" content="#08090A">
 <meta property="og:site_name" content="POLYMARCT">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://yessosyer-tech.github.io/polymarct/market.html">
 <meta property="og:title" content="POLYMARCT // Market">
 <meta property="og:description" content="Probability, liquidity, flow and the verdict rules behind a single question.">
 <meta name="twitter:card" content="summary_large_image">
@@ -64,6 +63,7 @@
         <button class="leg leg--no" data-side="NO"><span class="lbl">TAKE NO</span><span class="val" id="pn"></span></button>
       </div>
       <div class="trade-in"><input id="amt" value="100" inputmode="decimal"><span class="meta" style="align-self:center">USDC</span></div>
+      <div class="meta" style="margin:-6px 0 12px;color:var(--dim)">USDC ON ARC ONLY</div>
       <div class="quick" style="margin-bottom:14px">
         <button data-amt="25">25</button><button data-amt="100">100</button><button data-amt="500">500</button><button data-amt="2500">2,500</button>
       </div>
@@ -72,7 +72,7 @@
       <div class="kv"><span class="k">PAYOUT IF CORRECT</span><span id="t-po" class="acid"></span></div>
       <div class="kv"><span class="k">MAX LOSS</span><span id="t-ml" class="down"></span></div>
       <button class="btn btn--primary btn--block" style="margin-top:16px" id="submit">ENTER MARKET</button>
-      <p class="muted" style="font-size:11px;line-height:1.6;margin:12px 0 0">Positions settle in USDC on Arc. You can lose the full amount committed. Demonstration state, no funds move.</p>
+      <p class="muted" style="font-size:11px;line-height:1.6;margin:12px 0 0">Collateral and settlement are USDC on Arc, and nothing else is accepted: no ETH, no other token, no other chain, no card. You can lose the full amount committed. Demonstration state, no funds move.</p>
     </div>
   </div>
 </div></section>
@@ -118,6 +118,7 @@
         <div class="kv"><span class="k">SOURCE</span><span id="r-src" style="text-align:right;max-width:62%"></span></div>
         <div class="kv"><span class="k">DISPUTE WINDOW</span><span>24H AFTER VERDICT</span></div>
         <div class="kv"><span class="k">SETTLEMENT</span><span>USDC ON ARC</span></div>
+        <div class="kv"><span class="k">ACCEPTED ASSET</span><span class="acid">USDC ONLY</span></div>
         <p class="muted" style="font-size:12.5px;line-height:1.65;margin:14px 0 0" id="r-crit"></p>
         <p class="meta" style="margin-top:14px;line-height:1.7;text-transform:none;letter-spacing:.02em;font-size:11.5px">The question cannot change after trading opens. Criteria, source and resolution time are fixed at creation.</p>
         <a class="btn btn--sm btn--block" style="margin-top:14px" href="verdict.html">VIEW VERDICT PROCESS</a>

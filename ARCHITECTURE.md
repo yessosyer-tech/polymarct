@@ -23,6 +23,34 @@ Nothing in this build touches funds. Every number is generated in the browser.
 
 ---
 
+## 0.1 The asset rule, binding
+
+**USDC on Arc is the only asset the product accepts, anywhere.** Collateral,
+trades, fees, creator bonds, dispute bonds, payouts and withdrawals are all
+USDC on Arc. There is no ETH path, no second token, no other chain, no card,
+no in-app swap and no bridge-in flow that accepts something else and converts.
+
+This is enforced at the contract layer, not in the interface: market
+collateral is typed to the single canonical USDC address on Arc, and any
+transfer in another asset reverts rather than being wrapped, swapped or
+credited. The UI simply has nothing else to offer.
+
+Consequences that follow, and are deliberate:
+
+- one unit of account end to end, so a probability in cents is a real price
+- no basis risk between what a position is worth and what it pays
+- no swap surface, which removes a whole class of MEV and slippage bugs
+- no bridge in the trust path
+- $PMARC is **not** a payment asset. Nobody needs to hold it to trade. It
+  carries governance, fee tier and access, and it can lower a creator bond,
+  but the bond itself is still posted in USDC.
+
+If a user arrives holding something else, the honest answer is that they
+cannot trade here until they hold USDC on Arc. Say that plainly instead of
+building a conversion funnel.
+
+---
+
 ## 1. Chain layer (Arc)
 
 Arc is the right base for this product for three concrete reasons, not because

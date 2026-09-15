@@ -9,7 +9,6 @@
 <meta name="theme-color" content="#08090A">
 <meta property="og:site_name" content="POLYMARCT">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://yessosyer-tech.github.io/polymarct/">
 <meta property="og:title" content="POLYMARCT // The future has a price.">
 <meta property="og:description" content="The leading prediction market on Arc. Trade on what happens next. Everyone has an opinion, only the market has a price.">
 <meta name="twitter:card" content="summary_large_image">
@@ -239,19 +238,21 @@ document.getElementById("themes").innerHTML = PM.themeReads().map(t=>{
     blk("1 MARKET NOBODY IS WATCHING","Thinnest book on the board. Information value is highest where attention is lowest.",[quiet]);
 })();
 
-/* PM glyph, built from probability lines */
+/* THE SPLIT UNIT, live: the boundary between YES and NO is the price,
+   so the mark reprices itself while you look at it. */
 document.getElementById("pmglyph").innerHTML = `
-<svg viewBox="0 0 220 120" style="width:100%;max-width:300px" fill="none" aria-label="PMARC mark">
-  <path d="M8 96A102 102 0 0 1 212 96" stroke="var(--acid)" stroke-width="2"/>
-  <g stroke="var(--white)" stroke-width="3">
-    <path d="M30 110V70"><animate attributeName="d" dur="6s" repeatCount="indefinite" values="M30 110V70;M30 110V56;M30 110V70"/></path>
-    <path d="M56 110V44"><animate attributeName="d" dur="7s" repeatCount="indefinite" values="M56 110V44;M56 110V62;M56 110V44"/></path>
-    <path d="M82 110V58"><animate attributeName="d" dur="5.5s" repeatCount="indefinite" values="M82 110V58;M82 110V36;M82 110V58"/></path>
-    <path d="M108 110V30"><animate attributeName="d" dur="8s" repeatCount="indefinite" values="M108 110V30;M108 110V48;M108 110V30"/></path>
-    <path d="M134 110V52"><animate attributeName="d" dur="6.5s" repeatCount="indefinite" values="M134 110V52;M134 110V34;M134 110V52"/></path>
-    <path d="M160 110V66"><animate attributeName="d" dur="7.5s" repeatCount="indefinite" values="M160 110V66;M160 110V50;M160 110V66"/></path>
-    <path d="M186 110V78"><animate attributeName="d" dur="6.2s" repeatCount="indefinite" values="M186 110V78;M186 110V64;M186 110V78"/></path>
-  </g>
+<svg viewBox="0 0 64 64" style="width:100%;max-width:240px" fill="none" aria-label="Polymarct mark">
+  <rect x="6" y="6" width="52" height="52" stroke="rgba(242,239,233,.22)" stroke-width="1.5"/>
+  <path fill="var(--white)" d="M6 6H30V20H44V32H22V44H38V58H6Z">
+    <animate attributeName="d" dur="9s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.34;.67;1" keySplines=".65 0 .35 1;.65 0 .35 1;.65 0 .35 1" values="M6 6H30V20H44V32H22V44H38V58H6Z;M6 6H25V16H39V28H17V42H33V58H6Z;M6 6H35V24H49V38H27V48H43V58H6Z;M6 6H30V20H44V32H22V44H38V58H6Z"/>
+  </path>
+  <g stroke="rgba(242,239,233,.34)" stroke-width="1.5"><path d="M36 13H58M50 26H58M28 38H58M44 51H58"/></g>
+  <path stroke="var(--acid)" stroke-width="2.5" d="M30 6V20H44V32H22V44H38V58">
+    <animate attributeName="d" dur="9s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.34;.67;1" keySplines=".65 0 .35 1;.65 0 .35 1;.65 0 .35 1" values="M30 6V20H44V32H22V44H38V58;M25 6V16H39V28H17V42H33V58;M35 6V24H49V38H27V48H43V58;M30 6V20H44V32H22V44H38V58"/>
+  </path>
+  <rect y="40" width="8" height="8" stroke="var(--acid)" stroke-width="2" x="34">
+    <animate attributeName="x" dur="9s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.34;.67;1" keySplines=".65 0 .35 1;.65 0 .35 1;.65 0 .35 1" values="34;29;39;34"/>
+  </rect>
 </svg>`;
 </script>
 </body>

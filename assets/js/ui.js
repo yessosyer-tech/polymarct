@@ -12,10 +12,14 @@ const UI = (() => {
     ["$PMARC", "token.html"]
   ];
 
-  /* the mark: an arc over probability bars. reads without the wordmark. */
-  const GLYPH = `<svg class="glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:17px;height:17px">
-    <path d="M2 17A10 10 0 0 1 22 17" stroke="var(--acid)" stroke-width="1.6"/>
-    <path d="M5 22V14M10 22V9M15 22V12M20 22V17" stroke="currentColor" stroke-width="1.6"/>
+  /* THE SPLIT UNIT: one square is one unit of probability, and the boundary
+     between the YES mass and the NO void is the price path itself. */
+  const GLYPH = `<svg class="glyph" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="width:19px;height:19px;flex:none">
+    <rect x="6" y="6" width="52" height="52" stroke="rgba(242,239,233,.22)" stroke-width="1.5"/>
+    <path d="M6 6H30V20H44V32H22V44H38V58H6Z" fill="var(--white)"/>
+    <g stroke="rgba(242,239,233,.34)" stroke-width="1.5"><path d="M36 13H58M50 26H58M28 38H58M44 51H58"/></g>
+    <path d="M30 6V20H44V32H22V44H38V58" stroke="var(--acid)" stroke-width="2.5"/>
+    <rect x="34" y="40" width="8" height="8" stroke="var(--acid)" stroke-width="2"/>
   </svg>`;
 
   function header(active) {
@@ -48,7 +52,7 @@ const UI = (() => {
           <a href="verdict.html#rules">Resolution rules</a><a href="verdict.html#dispute">Dispute window</a><a href="verdict.html#risk">Risk disclosure</a><a href="404.html">Status</a></div>
       </div>
       <p class="legal">
-        Polymarct is an information market. Trading outcome positions carries risk, including total loss of the amount committed to a position. Nothing on this site is investment advice, and no return is promised, implied or guaranteed. $PMARC is an ecosystem asset, not an investment product or a claim on revenue. Access is subject to jurisdiction gating, eligibility checks and age restrictions where required by law. Market data shown in this build is demonstration data.
+        Polymarct is an information market. Positions are collateralised and settled exclusively in USDC on Arc; no other asset, token or chain is accepted. Trading outcome positions carries risk, including total loss of the amount committed to a position. Nothing on this site is investment advice, and no return is promised, implied or guaranteed. $PMARC is an ecosystem asset, not an investment product or a claim on revenue. Access is subject to jurisdiction gating, eligibility checks and age restrictions where required by law. Market data shown in this build is demonstration data.
       </p>
       <p class="legal" style="border:0;margin-top:10px;padding-top:0">POLYMARCT // BUILT FOR ARC. BUILT FOR MARKETS.</p>
     </div></footer>`;
@@ -71,9 +75,10 @@ const UI = (() => {
     document.getElementById("connect").onclick = () => {
       openModal(`<div class="panel-h">WALLET</div>
         <h3 class="h3" style="margin-bottom:12px">CONNECT TO ARC</h3>
-        <p class="muted" style="font-size:14px;margin-top:0">Wallet connection, USDC deposits and order execution are wired in the contract layer. This build runs the market experience on demonstration state, so nothing here touches funds.</p>
+        <p class="muted" style="font-size:14px;margin-top:0">Polymarct takes one asset on one chain: USDC on Arc. No ETH, no other token, no bridging in from somewhere else, no card. A wallet holding anything else has nothing to trade with here. This build runs on demonstration state, so nothing touches funds.</p>
         <div class="kv"><span class="k">NETWORK</span><span>ARC MAINNET</span></div>
-        <div class="kv"><span class="k">SETTLEMENT</span><span>USDC</span></div>
+        <div class="kv"><span class="k">ACCEPTED ASSET</span><span class="acid">USDC ONLY</span></div>
+        <div class="kv"><span class="k">SETTLEMENT</span><span>USDC ON ARC</span></div>
         <div class="kv"><span class="k">STATUS</span><span class="acid">DEMO STATE</span></div>
         <button class="btn btn--block" style="margin-top:18px" onclick="UI.closeModal()">CLOSE</button>`);
     };

@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE FLOW // POLYMARCT MOTION 02</title>
+<link rel="icon" href="../../assets/mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="motion.css">
+<style>
+  .sc{position:absolute;inset:0;opacity:0}
+  #deck{position:absolute;inset:0;perspective:1800px;perspective-origin:50% 44%}
+  .step{position:absolute;left:100px;top:84px;display:flex;align-items:baseline;gap:20px}
+  .step b{font-family:var(--mono);font-size:20px;letter-spacing:4px;color:var(--acid);font-weight:500}
+  .step span{font-family:var(--mono);font-size:20px;letter-spacing:7px;color:var(--muted);text-transform:uppercase}
+  #hero{position:absolute;left:100px;top:210px;width:1120px}
+  #chart{position:absolute;left:100px;top:600px;width:1120px;height:260px}
+  #cursor{position:absolute;width:22px;height:22px;pointer-events:none;z-index:40}
+  #cursor:before,#cursor:after{content:"";position:absolute;background:var(--white)}
+  #cursor:before{left:0;top:10px;width:22px;height:2px}
+  #cursor:after{left:10px;top:0;width:2px;height:22px}
+  .trade{position:absolute;right:100px;top:210px;width:520px}
+  .btn{font-family:var(--mono);font-size:18px;letter-spacing:4px;text-transform:uppercase;padding:20px;
+    text-align:center;border:1px solid var(--line-strong);margin-top:22px}
+  .btn.go{background:var(--acid);color:#000;border-color:var(--acid);font-weight:700}
+  .feed{position:absolute;right:100px;top:640px;width:520px}
+  .feed .row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:16px;
+    padding:13px 0;border-bottom:1px solid var(--line);color:var(--muted)}
+  .stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-7deg);
+    border:5px solid var(--acid);padding:26px 50px;font-size:78px;font-weight:700;letter-spacing:-2px;color:var(--acid)}
+  .payout{font-size:150px;font-weight:600;letter-spacing:-7px;line-height:1}
+  .only{font-family:var(--mono);font-size:15px;letter-spacing:3.4px;color:var(--dim);margin-top:16px;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas class="layer" id="bg"></canvas>
+
+  <div class="step" id="step"><b>01</b><span>DISCOVER</span></div>
+
+  <!-- 01 the deck -->
+  <div class="sc" id="s1"><div id="deck"></div></div>
+
+  <!-- 02 the market -->
+  <div class="sc" id="s2">
+    <div id="hero">
+      <div class="mono" style="font-size:19px;letter-spacing:5px;color:var(--dim)">CRYPTO // INFORMATION EVENT</div>
+      <div class="h2" id="q" style="margin-top:22px;max-width:1000px">Will BTC reach $125,000 before October 31?</div>
+      <div style="display:flex;align-items:baseline;gap:30px;margin-top:40px">
+        <div class="big-num" id="pct" style="font-size:210px">67%</div>
+        <div class="h3 mono muted" style="letter-spacing:8px">YES</div>
+        <div class="h3 mono acid" id="d24">+8.4%</div>
+      </div>
+    </div>
+    <canvas id="chart"></canvas>
+
+    <div class="panel trade" id="trade">
+      <div class="panel-h"><span>TAKE A POSITION</span><span id="sideLbl">YES</span></div>
+      <div class="legs" style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)">
+        <div class="leg" id="legYes" style="background:var(--surface);padding:18px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:17px">
+          <span class="muted" style="font-size:14px;letter-spacing:3px">TAKE YES</span><span class="acid" id="cy">67&cent;</span></div>
+        <div class="leg" style="background:var(--surface);padding:18px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:17px">
+          <span class="muted" style="font-size:14px;letter-spacing:3px">TAKE NO</span><span class="no" id="cn">33&cent;</span></div>
+      </div>
+      <div class="kv" style="margin-top:22px"><span class="k">AMOUNT</span><span id="amt">250.00 USDC</span></div>
+      <div class="kv"><span class="k">SHARES</span><span id="sh">373.13 YES</span></div>
+      <div class="kv"><span class="k">PAYOUT IF CORRECT</span><span class="acid" id="po">$373.13</span></div>
+      <div class="kv"><span class="k">MAX LOSS</span><span class="no">$250.00</span></div>
+      <div class="btn go" id="cta">ENTER MARKET</div>
+      <div class="only">SETTLES IN USDC ON ARC // NO OTHER ASSET, NO OTHER CHAIN</div>
+    </div>
+
+    <div class="feed" id="feed"></div>
+  </div>
+
+  <!-- 03 why -->
+  <div class="sc" id="s3">
+    <div class="panel" id="whyPanel" style="left:100px;top:230px;width:900px">
+      <div class="panel-h"><span>WHY IS IT MOVING</span><span class="acid">DERIVED</span></div>
+      <div class="h3" style="margin-bottom:26px">Probability moved +8.2% in 4 minutes</div>
+      <div id="drivers"></div>
+    </div>
+    <div class="panel" style="right:100px;top:230px;width:660px" id="whySide">
+      <div class="panel-h"><span>MARKET ACTIVITY</span></div>
+      <div class="kv"><span class="k">WATCHING</span><span>18,421</span></div>
+      <div class="kv"><span class="k">CONSENSUS</span><span class="acid">+6% / 18 MIN</span></div>
+      <div class="kv"><span class="k">TOP TRADER</span><span>BOUGHT YES</span></div>
+    </div>
+  </div>
+
+  <!-- 04 verdict -->
+  <div class="sc" id="s4">
+    <div class="panel" style="left:50%;top:190px;transform:translateX(-50%);width:1100px" id="verdictCard">
+      <div class="panel-h"><span>THE VERDICT ENGINE</span><span class="acid">RESOLVED</span></div>
+      <div class="h2" style="margin-bottom:30px">Will BTC reach $125,000 before October 31?</div>
+      <div class="kv"><span class="k">SOURCE</span><span>COINBASE BTC-USD, HOURLY CLOSE</span></div>
+      <div class="kv"><span class="k">READING</span><span class="acid">$125,412.00</span></div>
+      <div class="kv"><span class="k">DISPUTE WINDOW</span><span>CLOSED, NO CHALLENGE</span></div>
+      <div class="kv"><span class="k">SETTLEMENT</span><span>USDC ON ARC</span></div>
+    </div>
+    <div class="stamp" id="stamp" style="top:820px">YES</div>
+  </div>
+
+  <!-- 05 settle -->
+  <div class="sc" id="s5">
+    <div class="t eyebrow" style="left:100px;top:300px">POSITION SETTLED</div>
+    <div class="t payout" id="payout" style="left:100px;top:360px">0.00</div>
+    <div class="t mono muted" id="payccy" style="left:100px;top:540px;font-size:30px;letter-spacing:8px">USDC ON ARC</div>
+    <div class="rule" id="r5" style="left:104px;top:600px;width:1100px;transform:scaleX(0)"></div>
+    <div class="t h3" id="nextq" style="left:100px;top:660px;color:var(--muted)">Next: will Arc exceed 1M daily transactions?</div>
+    <div class="btn go" id="again" style="position:absolute;left:100px;top:740px;width:340px">EXPLORE OUTCOME</div>
+  </div>
+
+  <div class="layer scan"></div>
+  <div class="layer grain"></div>
+  <div class="layer vig"></div>
+  <div class="layer flash" id="flash"></div>
+  <div id="cursor" style="opacity:0"></div>
+</div>
+
+<script src="motion.js"></script>
+<script>
+const bg = MO.hidpi(document.getElementById("bg"));
+const field = new MO.Field(1920,1080,"flow",170);
+const $ = id => document.getElementById(id);
+const E = MO.E, lerp = MO.lerp, inv = MO.inv, clamp = MO.clamp;
+
+const DECK = [
+  { c:"CRYPTO", q:"Will BTC reach $125,000 before October 31?", p:67, d:"+8.4%", v:"$4.82M", n:"18,421" },
+  { c:"ARC",    q:"Will Arc exceed 1M daily transactions?",      p:42, d:"+6.1%", v:"$1.34M", n:"8,840" },
+  { c:"POLITICS",q:"Will the Fed cut rates at the next meeting?", p:71, d:"+11.2%",v:"$6.24M", n:"24,100" },
+  { c:"TECHNOLOGY",q:"Will OpenAI ship a new frontier model?",   p:69, d:"+4.1%", v:"$2.84M", n:"14,210" },
+  { c:"BUSINESS",q:"Will NVDA beat consensus revenue?",          p:72, d:"+3.8%", v:"$5.12M", n:"22,140" }
+];
+$("deck").innerHTML = DECK.map((m,i)=>`
+  <div class="card" data-i="${i}">
+    <div class="cat">${m.c}</div>
+    <div class="q">${m.q}</div>
+    <div style="display:flex;align-items:baseline;gap:16px">
+      <div class="p">${m.p}%</div><div class="mono acid" style="font-size:20px">${m.d}</div>
+    </div>
+    <div class="bar" style="margin-top:18px"><i style="width:${m.p}%"></i></div>
+    <div class="legs">
+      <div class="leg"><span class="muted">TAKE YES</span><span class="acid">${m.p}&cent;</span></div>
+      <div class="leg"><span class="muted">TAKE NO</span><span class="no">${100-m.p}&cent;</span></div>
+    </div>
+    <div class="meta"><span>${m.v} VOL</span><span>${m.n} TRADERS</span></div>
+  </div>`).join("");
+const cards = [...document.querySelectorAll("#deck .card")];
+
+$("drivers").innerHTML = [
+  ["24H VOLUME","$1.24M","4.2x normal"],
+  ["LARGEST TRADE","$284,000","single fill"],
+  ["LIQUIDITY","+$420K","deepening"],
+  ["TRADERS 24H","1,482","unique addresses"],
+  ["INFORMATION EVENT","DETECTED","broke its 24h range"]
+].map(([k,v,n])=>`<div class="kv"><span class="k">${k}</span><span>${v} <span class="muted">// ${n}</span></span></div>`).join("");
+
+$("feed").innerHTML = Array.from({length:5},(_,i)=>
+  `<div class="row"><span>0x${(Math.random()*255|0).toString(16).padStart(2,"0").toUpperCase()}...${(Math.random()*4095|0).toString(16).padStart(3,"0").toUpperCase()}</span>
+   <span class="${i%2?"no":"acid"}">$${(2000+Math.random()*28000|0).toLocaleString()} ${i%2?"NO":"YES"}</span></div>`).join("");
+
+const S = { speed:.8, alpha:1 };
+const HIST = Array.from({length:120},(_,i)=> .48 + Math.sin(i/9)*.05 + i/900 + Math.sin(i/3)*.012);
+
+function drawChart(reveal, extra){
+  const cv = $("chart"), ctx = cv.getContext("2d");
+  cv.width = 1120; cv.height = 260;
+  const pts = HIST.slice(0, Math.max(2, Math.round(HIST.length*reveal)));
+  if (extra) pts.push(...extra);
+  const mn = Math.min(...pts)-.02, mx = Math.max(...pts)+.02, rg = mx-mn;
+  const X = i => (i/(HIST.length-1))*1120, Y = p => 260-((p-mn)/rg)*250-5;
+  ctx.strokeStyle="rgba(242,239,233,.07)"; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){ const y=(i/4)*260; ctx.beginPath(); ctx.moveTo(0,y+.5); ctx.lineTo(1120,y+.5); ctx.stroke(); }
+  ctx.beginPath(); ctx.moveTo(0,260);
+  pts.forEach((p,i)=>ctx.lineTo(X(i),Y(p)));
+  ctx.lineTo(X(pts.length-1),260); ctx.closePath();
+  ctx.fillStyle="rgba(204,255,0,.08)"; ctx.fill();
+  ctx.beginPath();
+  pts.forEach((p,i)=> i?ctx.lineTo(X(i),Y(p)):ctx.moveTo(X(i),Y(p)));
+  ctx.strokeStyle="#CCFF00"; ctx.lineWidth=2.4; ctx.stroke();
+  const lx=X(pts.length-1), ly=Y(pts[pts.length-1]);
+  ctx.beginPath(); ctx.arc(lx,ly,6,0,7); ctx.fillStyle="#CCFF00"; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(lx,0); ctx.lineTo(lx,260); ctx.strokeStyle="rgba(204,255,0,.25)"; ctx.lineWidth=1; ctx.stroke();
+}
+
+function step(n, label){ $("step").innerHTML = `<b>${n}</b><span>${label}</span>`; }
+function scene(el,on){ el.style.opacity = on?1:0; }
+function cursor(x,y,a,press){
+  const c=$("cursor");
+  c.style.opacity=a; c.style.transform=`translate(${x}px,${y}px) scale(${press?.7:1})`;
+}
+
+MO.mount({
+  duration: 26,
+  title: "THE FLOW",
+  reset(){
+    ["s1","s2","s3","s4","s5"].forEach(id => $(id).style.opacity = 0);
+    $("flash").style.opacity = 0;
+    $("cursor").style.opacity = 0;
+    S.speed = 1;
+  },
+  render(tl){
+
+    /* ---- 01 DISCOVER : the deck arrives in depth ---- */
+    tl.beat(0, 4.2, (p,t)=>{
+      scene($("s1"),true); scene($("s2"),false); scene($("s3"),false); scene($("s4"),false); scene($("s5"),false);
+      step("01","DISCOVER");
+      $("step").style.opacity = String(clamp(inv(p,0,.08),0,1));
+      S.speed = lerp(6,.7,E.outExpo(clamp(p*2.2,0,1)));
+      cards.forEach((c,i)=>{
+        const a = clamp(inv(p, .04+i*.055, .34+i*.055),0,1);
+        const e = E.outExpo(a);
+        const drift = E.inOutCubic(clamp(inv(p,.4,1),0,1));
+        const x = 120 + i*330 - drift*160;
+        const y = 300 + (i%2?70:0) + Math.sin(t*.7+i)*8;
+        const z = lerp(-900, -i*70, e);
+        const rot = lerp(16, -3 + i*1.1, e);
+        c.style.transform = `translate3d(${x}px,${y}px,${z}px) rotateY(${rot}deg) rotateX(${lerp(14,2,e)}deg)`;
+        c.style.opacity = String(a);
+        c.style.filter = `blur(${(1-e)*10}px)`;
+      });
+    });
+
+    /* ---- 02 one card is chosen and becomes the market ---- */
+    tl.beat(4.2, 6.6, (p,t)=>{
+      scene($("s1"),true); scene($("s2"),p>.62);
+      step("02","TRADE");
+      S.speed = .7;
+      const e = E.inOutCubic(p);
+      cursor(lerp(1500,470,E.inOutCubic(clamp(p*2.4,0,1))), lerp(820,430,E.inOutCubic(clamp(p*2.4,0,1))),
+             p<.52?1:0, p>.30 && p<.40);
+      cards.forEach((c,i)=>{
+        if (i===0){
+          const k = E.outExpo(clamp(inv(p,.34,.86),0,1));
+          c.style.transform = `translate3d(${lerp(-40,80,k)}px,${lerp(300,210,k)}px,${lerp(0,240,k)}px) rotateY(0deg) rotateX(0deg) scale(${lerp(1,1.9,k)})`;
+          c.style.opacity = String(1-clamp(inv(p,.66,.84),0,1));
+          c.style.filter = `blur(${clamp(inv(p,.7,.9),0,1)*14}px)`;
+        } else {
+          const away = E.inOutCubic(clamp(inv(p,.22,.7),0,1));
+          c.style.transform = `translate3d(${lerp(120+i*330-160, 120+i*330+340, away)}px,${300+(i%2?70:0)}px,${lerp(-i*70,-1400,away)}px) rotateY(${lerp(-3+i*1.1,26,away)}deg)`;
+          c.style.opacity = String(1-away);
+          c.style.filter = `blur(${away*16}px)`;
+        }
+      });
+      const s2 = clamp(inv(p,.62,1),0,1);
+      $("hero").style.opacity = String(s2);
+      $("hero").style.transform = `translateY(${(1-E.outExpo(s2))*40}px)`;
+      $("trade").style.opacity = String(clamp(inv(p,.74,1),0,1));
+      $("trade").style.transform = `translateX(${(1-E.outExpo(clamp(inv(p,.74,1),0,1)))*70}px)`;
+      $("chart").style.opacity = "0"; $("feed").style.opacity = "0";
+      drawChart(.02);
+    });
+
+    /* ---- 03 the chart draws, then the position is taken ---- */
+    tl.beat(6.6, 11.4, (p,t)=>{
+      scene($("s1"),false); scene($("s2"),true);
+      step("02","TRADE");
+      $("hero").style.opacity="1"; $("hero").style.transform="none";
+      $("trade").style.opacity="1"; $("trade").style.transform="none";
+      $("chart").style.opacity = String(clamp(inv(p,.02,.2),0,1));
+      drawChart(clamp(inv(p,.04,.46),0,1));
+
+      /* cursor walks to TAKE YES and presses */
+      const walk = E.inOutCubic(clamp(inv(p,.34,.52),0,1));
+      cursor(lerp(960,1450,walk), lerp(700,335,walk), clamp(inv(p,.3,.36),0,1)*(1-clamp(inv(p,.82,.9),0,1)),
+             p>.52 && p<.58);
+      $("legYes").style.background = (p>.5 && p<.62) ? "var(--acid)" : "var(--surface)";
+      $("legYes").style.color = (p>.5 && p<.62) ? "#000" : "";
+      $("cy").style.color = (p>.5 && p<.62) ? "#000" : "";
+
+      if (p > .62){
+        const walk2 = E.inOutCubic(clamp(inv(p,.62,.74),0,1));
+        cursor(lerp(1450,1600,walk2), lerp(335,690,walk2), 1, p>.74 && p<.79);
+      }
+      const cta = $("cta");
+      if (p < .74){ cta.textContent = "ENTER MARKET"; cta.className = "btn go"; }
+      else if (p < .84){ cta.textContent = "READING THE MARKET"; cta.className = "btn"; }
+      else { cta.textContent = "POSITION CONFIRMED"; cta.className = "btn go"; }
+      $("feed").style.opacity = String(clamp(inv(p,.86,1),0,1));
+    });
+    tl.beat(11.0, 11.4, (p,t,on) => { $("flash").style.opacity = on ? String((1-p)*.28) : "0"; });
+
+    /* ---- 04 FOLLOW : the market reprices ---- */
+    tl.beat(11.4, 15.2, (p,t)=>{
+      scene($("s2"),true); scene($("s3"),false);
+      step("03","FOLLOW");
+      $("cta").textContent = "POSITION CONFIRMED"; $("cta").className = "btn go";
+      cursor(0,0,0);
+      const wave = [0, .04, -.02, .06, .03][Math.min(4, Math.floor(p*5))];
+      const pct = Math.round(67 + wave*100 + Math.sin(t*7)*.8);
+      $("pct").textContent = pct + "%";
+      $("cy").innerHTML = pct + "&cent;"; $("cn").innerHTML = (100-pct) + "&cent;";
+      $("d24").textContent = (wave>=0?"+":"") + (8.4 + wave*100).toFixed(1) + "%";
+      $("d24").className = "h3 mono " + (wave>=0 ? "acid" : "no");
+      $("po").textContent = "$" + (373.13).toFixed(2);
+      const extra = Array.from({length: Math.round(p*26)},(_,i)=> .58 + Math.sin((120+i)/5)*.03 + i/300);
+      drawChart(1, extra);
+      $("feed").style.opacity = "1";
+      [...$("feed").children].forEach((r,i)=>{
+        r.style.opacity = String(clamp(inv(p, i*.06, .1+i*.06),0,1));
+        r.style.transform = `translateX(${(1-E.outExpo(clamp(inv(p,i*.06,.1+i*.06),0,1)))*26}px)`;
+      });
+      $("pct").classList.toggle("split", (t*3|0)%7===0);
+    });
+
+    /* ---- 05 WHY ---- */
+    tl.beat(15.2, 18.6, (p,t)=>{
+      scene($("s2"),false); scene($("s3"),true); scene($("s4"),false);
+      step("04","WHY");
+      $("whyPanel").style.opacity = String(clamp(inv(p,0,.12),0,1));
+      $("whyPanel").style.transform = `translateY(${(1-E.outExpo(clamp(inv(p,0,.2),0,1)))*50}px)`;
+      $("whySide").style.opacity = String(clamp(inv(p,.14,.3),0,1));
+      $("whySide").style.transform = `translateX(${(1-E.outExpo(clamp(inv(p,.14,.34),0,1)))*60}px)`;
+      [...$("drivers").children].forEach((r,i)=>{
+        const a = clamp(inv(p, .12+i*.09, .28+i*.09),0,1);
+        r.style.opacity = String(a);
+        r.style.clipPath = `inset(0 ${(1-E.outExpo(a))*100}% 0 0)`;
+      });
+      S.speed = lerp(.7,1.6,p);
+    });
+
+    /* ---- 06 VERDICT ---- */
+    tl.beat(18.6, 21.8, (p,t)=>{
+      scene($("s3"),false); scene($("s4"),true); scene($("s5"),false);
+      step("05","RESOLVE");
+      $("verdictCard").style.opacity = String(clamp(inv(p,0,.14),0,1));
+      $("verdictCard").style.transform = `translateX(-50%) translateY(${(1-E.outExpo(clamp(inv(p,0,.24),0,1)))*46}px)`;
+      const st = clamp(inv(p,.42,.58),0,1);
+      $("stamp").style.opacity = String(st);
+      $("stamp").style.transform = `translate(-50%,-50%) rotate(-7deg) scale(${lerp(2.6,1,E.outExpo(st))})`;
+      $("stamp").textContent = "YES";
+      S.speed = lerp(1.6,.5,E.outQuad(p));
+    });
+    tl.beat(20.2, 20.6, (p,t,on) => { $("flash").style.opacity = on ? String((1-p)*.34) : "0"; });
+
+    /* ---- 07 SETTLE ---- */
+    tl.beat(21.8, 26, (p,t)=>{
+      scene($("s4"),false); scene($("s5"),true);
+      step("06","SETTLE");
+      const c = E.outExpo(clamp(inv(p,.04,.46),0,1));
+      $("payout").textContent = (373.13*c).toFixed(2);
+      $("payccy").style.opacity = String(clamp(inv(p,.3,.5),0,1));
+      $("r5").style.transform = `scaleX(${E.outExpo(clamp(inv(p,.44,.66),0,1))})`;
+      $("nextq").style.opacity = String(clamp(inv(p,.56,.74),0,1));
+      $("again").style.opacity = String(clamp(inv(p,.66,.82),0,1));
+      S.speed = lerp(.5,4,E.inExpo(clamp(inv(p,.8,1),0,1)));
+      const out = clamp(inv(p,.92,1),0,1);
+      $("s5").style.opacity = String(1-out);
+    });
+  }
+});
+
+(function raf(now){
+  bg.clearRect(0,0,1920,1080);
+  bg.strokeStyle="rgba(242,239,233,.04)"; bg.lineWidth=1;
+  bg.beginPath();
+  for(let x=0;x<1920;x+=160){ bg.moveTo(x+.5,0); bg.lineTo(x+.5,1080); }
+  for(let y=0;y<1080;y+=160){ bg.moveTo(0,y+.5); bg.lineTo(1920,y+.5); }
+  bg.stroke();
+  field.draw(bg,(now||0)/1000,{ speed:S.speed, alpha:.55, blur:clamp((S.speed-1)/14,0,.4) });
+  requestAnimationFrame(raf);
+})();
+</script>
+</body>
+</html>

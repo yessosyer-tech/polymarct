@@ -9,7 +9,6 @@
 <meta name="theme-color" content="#08090A">
 <meta property="og:site_name" content="POLYMARCT">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://yessosyer-tech.github.io/polymarct/token.html">
 <meta property="og:title" content="POLYMARCT // $PMARC">
 <meta property="og:description" content="The asset powering Polymarct. Product first, token second. No promised yield.">
 <meta name="twitter:card" content="summary_large_image">
@@ -34,20 +33,20 @@
       </div>
     </div>
     <div class="center">
-      <svg class="mark" viewBox="0 0 320 200" fill="none" aria-label="PMARC mark">
-        <path d="M14 168A146 146 0 0 1 306 168" stroke="var(--acid)" stroke-width="2.4"/>
-        <g stroke="var(--white)" stroke-width="5">
-          <path d="M34 186V128"><animate attributeName="d" dur="6s" repeatCount="indefinite" values="M34 186V128;M34 186V104;M34 186V128"/></path>
-          <path d="M70 186V92"><animate attributeName="d" dur="7.4s" repeatCount="indefinite" values="M70 186V92;M70 186V120;M70 186V92"/></path>
-          <path d="M106 186V112"><animate attributeName="d" dur="5.6s" repeatCount="indefinite" values="M106 186V112;M106 186V70;M106 186V112"/></path>
-          <path d="M142 186V58"><animate attributeName="d" dur="8.2s" repeatCount="indefinite" values="M142 186V58;M142 186V88;M142 186V58"/></path>
-          <path d="M178 186V76"><animate attributeName="d" dur="6.8s" repeatCount="indefinite" values="M178 186V76;M178 186V50;M178 186V76"/></path>
-          <path d="M214 186V104"><animate attributeName="d" dur="7.1s" repeatCount="indefinite" values="M214 186V104;M214 186V80;M214 186V104"/></path>
-          <path d="M250 186V134"><animate attributeName="d" dur="6.3s" repeatCount="indefinite" values="M250 186V134;M250 186V110;M250 186V134"/></path>
-          <path d="M286 186V156"><animate attributeName="d" dur="5.9s" repeatCount="indefinite" values="M286 186V156;M286 186V138;M286 186V156"/></path>
-        </g>
-      </svg>
-      <div class="meta" style="justify-content:center;margin-top:16px">AN ARC OVER PROBABILITY. THE MARK READS WITHOUT THE WORDMARK.</div>
+      <svg class="mark" viewBox="0 0 64 64" style="width:100%;max-width:380px" fill="none" aria-label="Polymarct mark">
+  <rect x="6" y="6" width="52" height="52" stroke="rgba(242,239,233,.22)" stroke-width="1.5"/>
+  <path fill="var(--white)" d="M6 6H30V20H44V32H22V44H38V58H6Z">
+    <animate attributeName="d" dur="11s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.34;.67;1" keySplines=".65 0 .35 1;.65 0 .35 1;.65 0 .35 1" values="M6 6H30V20H44V32H22V44H38V58H6Z;M6 6H25V16H39V28H17V42H33V58H6Z;M6 6H35V24H49V38H27V48H43V58H6Z;M6 6H30V20H44V32H22V44H38V58H6Z"/>
+  </path>
+  <g stroke="rgba(242,239,233,.34)" stroke-width="1.5"><path d="M36 13H58M50 26H58M28 38H58M44 51H58"/></g>
+  <path stroke="var(--acid)" stroke-width="2.5" d="M30 6V20H44V32H22V44H38V58">
+    <animate attributeName="d" dur="11s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.34;.67;1" keySplines=".65 0 .35 1;.65 0 .35 1;.65 0 .35 1" values="M30 6V20H44V32H22V44H38V58;M25 6V16H39V28H17V42H33V58;M35 6V24H49V38H27V48H43V58;M30 6V20H44V32H22V44H38V58"/>
+  </path>
+  <rect y="40" width="8" height="8" stroke="var(--acid)" stroke-width="2" x="34">
+    <animate attributeName="x" dur="11s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.34;.67;1" keySplines=".65 0 .35 1;.65 0 .35 1;.65 0 .35 1" values="34;29;39;34"/>
+  </rect>
+</svg>
+      <div class="meta" style="justify-content:center;margin-top:16px">ONE SQUARE IS ONE UNIT. THE EDGE BETWEEN YES AND NO IS THE PRICE.</div>
     </div>
   </div>
 </div></section>
@@ -59,7 +58,7 @@
   <div class="panel" style="margin-top:1px;border-top:0">
     <div class="kv"><span class="k">CONTRACT</span><span class="mono" id="ca">0x7A4E...C19F</span></div>
     <div class="kv"><span class="k">NETWORK</span><span class="mono">ARC MAINNET</span></div>
-    <div class="kv"><span class="k">SETTLEMENT ASSET</span><span class="mono">USDC</span></div>
+    <div class="kv"><span class="k">SETTLEMENT ASSET</span><span class="mono">USDC ON ARC ONLY</span></div>
   </div>
 </div></section>
 
@@ -68,13 +67,13 @@
   <span class="sub">Five jobs, each tied to something the market actually needs. Anything that cannot be tied to product mechanics does not belong here.</span></div>
   <div class="cols cols--2">
     <div class="panel"><div class="panel-h">01 / MARKET CREATION</div>
-      <p style="margin:0;font-size:14px;line-height:1.6">Opening a market requires a creator deposit in $PMARC. The deposit is returned when the market resolves cleanly and is slashed when a question is found to be ambiguous or manipulated. Creation has a cost so that garbage questions have a cost.</p></div>
+      <p style="margin:0;font-size:14px;line-height:1.6">Opening a market requires a creator bond, posted in USDC on Arc like everything else that involves money here. Holding $PMARC lowers the bond. The bond is returned when the market resolves cleanly and is slashed when a question is found to be ambiguous or manipulated. Creation has a cost so that garbage questions have a cost.</p></div>
     <div class="panel"><div class="panel-h">02 / LIQUIDITY</div>
       <p style="margin:0;font-size:14px;line-height:1.6">Liquidity provision on thin but genuine markets is rewarded from an ecosystem allocation. Rewards are weighted by resolved volume and uptime of quotes, not by raw size, so mercenary wash liquidity earns nothing.</p></div>
     <div class="panel"><div class="panel-h">03 / GOVERNANCE</div>
       <p style="margin:0;font-size:14px;line-height:1.6">Platform level decisions go to holders: category policy, fee parameters, dispute thresholds and which resolution sources are admissible. Governance covers the rules of the market, never the outcome of a live one.</p></div>
     <div class="panel"><div class="panel-h">04 / FEES</div>
-      <p style="margin:0;font-size:14px;line-height:1.6">Trading settles in USDC. Holding $PMARC can reduce the protocol fee tier on execution. The discount is a utility, not a yield, and it is capped so that fee policy stays legible.</p></div>
+      <p style="margin:0;font-size:14px;line-height:1.6">Trading, collateral, fees and payouts are USDC on Arc, always. $PMARC is not a payment asset and you never need it to trade. Holding it can reduce the protocol fee tier, a utility rather than a yield, and it is capped so fee policy stays legible.</p></div>
     <div class="panel"><div class="panel-h">05 / ACCESS</div>
       <p style="margin:0;font-size:14px;line-height:1.6">Advanced analytics, the full terminal layer, Market Map exports and signal alerting can be gated to holders. The consumer product stays free, because the habit is the business.</p></div>
     <div class="panel" style="border-color:var(--line-strong)"><div class="panel-h">WHAT WE DO NOT CLAIM</div>

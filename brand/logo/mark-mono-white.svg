@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Polymarct">
+  <rect x="6" y="6" width="52" height="52" fill="none" stroke="rgba(242,239,233,.45)" stroke-width="1.5"/>
+  <path d="M6 6H30V20H44V32H22V44H38V58H6Z" fill="#F2EFE9"/>
+  <g stroke="rgba(242,239,233,.45)" stroke-width="1.5"><path d="M36 13H58M50 26H58M28 38H58M44 51H58"/></g>
+  <path d="M30 6V20H44V32H22V44H38V58" fill="none" stroke="#08090A" stroke-width="2.5"/>
+  <rect x="34" y="40" width="8" height="8" fill="none" stroke="#08090A" stroke-width="2"/>
+</svg>

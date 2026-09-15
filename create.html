@@ -9,7 +9,6 @@
 <meta name="theme-color" content="#08090A">
 <meta property="og:site_name" content="POLYMARCT">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://yessosyer-tech.github.io/polymarct/create.html">
 <meta property="og:title" content="POLYMARCT // Create a market">
 <meta property="og:description" content="One question, two outcomes, no ambiguity. Every market states exactly what makes it resolve.">
 <meta name="twitter:card" content="summary_large_image">
@@ -65,13 +64,14 @@
       </div>
 
       <div class="cols cols--2" style="gap:16px">
-        <div class="field"><label>SEED LIQUIDITY (USDC)</label><input id="f-liq" value="2500" inputmode="decimal"><div class="errmsg hide" id="e-liq"></div></div>
+        <div class="field"><label>SEED LIQUIDITY (USDC ON ARC)</label><input id="f-liq" value="2500" inputmode="decimal"><div class="errmsg hide" id="e-liq"></div></div>
         <div class="field"><label>OPENING PROBABILITY</label><input id="f-p" value="50" inputmode="decimal"><div class="hint">Percent chance of YES at open.</div></div>
       </div>
 
       <div class="field"><label>CREATOR DEPOSIT</label>
         <div class="panel" style="padding:14px">
-          <div class="kv"><span class="k">DEPOSIT</span><span class="mono">5,000 $PMARC</span></div>
+          <div class="kv"><span class="k">DEPOSIT</span><span class="mono">500 USDC</span></div>
+          <div class="kv"><span class="k">ACCEPTED ASSET</span><span class="mono acid">USDC ON ARC ONLY</span></div>
           <div class="kv"><span class="k">RETURNED</span><span class="mono">ON CLEAN RESOLUTION</span></div>
           <div class="kv"><span class="k">SLASHED</span><span class="mono down">ON AMBIGUOUS OR MANIPULATED WORDING</span></div>
         </div>
@@ -128,7 +128,7 @@ function validate(){
     { k:"Named resolution source", ok: src.length>=10 && !/twitter|x\.com|telegram|vibes|community/i.test(src), msg:"A specific feed, filing or publication. Social platforms are not a source." },
     { k:"YES criteria explicit", ok: yes.length>=40 && /\byes\b/i.test(yes), msg:"State the exact condition, including the comparison and the threshold." },
     { k:"NO criteria explicit", ok: no.length>=40 && /\bno\b/i.test(no), msg:"Cover the failure case and the missing data case." },
-    { k:"Seed liquidity", ok: liq>=500, msg:"Minimum 500 USDC so the opening book is tradeable." }
+    { k:"Seed liquidity", ok: liq>=500, msg:"Minimum 500 USDC on Arc so the opening book is tradeable. USDC is the only accepted asset." }
   ];
 
   const passed = checks.filter(c=>c.ok).length;
@@ -172,7 +172,7 @@ F("submit").onclick = ()=>{
     <h3 class="h3" style="margin-bottom:14px">${v.q}</h3>
     <div class="kv"><span class="k">STATUS</span><span class="acid">QUEUED FOR REVIEW</span></div>
     <div class="kv"><span class="k">REVIEW WINDOW</span><span>UP TO 24H</span></div>
-    <div class="kv"><span class="k">DEPOSIT</span><span>5,000 $PMARC LOCKED</span></div>
+    <div class="kv"><span class="k">DEPOSIT</span><span>500 USDC LOCKED</span></div>
     <p class="muted" style="font-size:12.5px;line-height:1.65;margin:14px 0 0">Automated validation is the first gate, not the last one. Before a market opens it is checked for manipulable wording, source reliability and whether the creator can influence the outcome. In this build nothing is submitted anywhere.</p>
     <button class="btn btn--block" style="margin-top:14px" onclick="UI.closeModal()">CLOSE</button>`);
 };

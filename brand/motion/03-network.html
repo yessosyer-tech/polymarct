@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE NETWORK // POLYMARCT MOTION 03</title>
+<link rel="icon" href="../../assets/mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="motion.css">
+<style>
+  .sc{position:absolute;inset:0;opacity:0}
+  .corner{position:absolute;font-family:var(--mono);font-size:17px;letter-spacing:4px;color:var(--dim);text-transform:uppercase}
+  .themebar{display:flex;align-items:center;gap:26px;margin-bottom:26px}
+  .themebar .nm{width:300px;font-size:38px;font-weight:600;letter-spacing:-1.4px;text-transform:uppercase}
+  .themebar .tr{flex:1;height:10px;background:var(--surface-2);position:relative;overflow:hidden}
+  .themebar .tr i{position:absolute;inset:0 auto 0 0;background:var(--acid)}
+  .themebar .vl{width:230px;text-align:right;font-family:var(--mono);font-size:30px}
+  .idx{position:absolute;left:100px;top:230px}
+  .idxnum{font-size:340px;font-weight:600;letter-spacing:-20px;line-height:.8}
+  .dial{position:absolute;right:140px;top:230px}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas class="layer" id="net"></canvas>
+  <canvas class="layer" id="fx"></canvas>
+
+  <div class="corner" id="c1" style="left:100px;top:80px">THE MARKET MAP</div>
+  <div class="corner" id="c2" style="right:100px;top:80px">50 MARKETS // 184 CONNECTIONS</div>
+  <div class="corner" id="c3" style="left:100px;bottom:80px">EVERY QUESTION IS CONNECTED</div>
+  <div class="corner" id="c4" style="right:100px;bottom:80px">ARC // LIVE</div>
+
+  <!-- 01 the single question -->
+  <div class="sc" id="s1">
+    <div class="t h2" id="seed" style="left:50%;top:430px;transform:translateX(-50%);text-align:center">Will BTC reach $125,000<br>before October 31?</div>
+    <div class="t eyebrow" id="seedlab" style="left:50%;top:360px;transform:translateX(-50%)">ONE QUESTION</div>
+  </div>
+
+  <!-- 02 map labels -->
+  <div class="sc" id="s2">
+    <div class="t h1" id="mapline" style="left:100px;top:180px">Rates move liquidity.<br>Liquidity moves BTC.</div>
+  </div>
+
+  <!-- 03 the future index -->
+  <div class="sc" id="s3">
+    <div class="idx">
+      <div class="eyebrow" style="margin-bottom:24px">THE FUTURE INDEX</div>
+      <div class="idxnum" id="fi">00.0</div>
+      <div class="mono acid" id="fid" style="font-size:40px;letter-spacing:-1px;margin-top:10px">+0.0%</div>
+      <div class="mono muted" id="firead" style="font-size:19px;letter-spacing:3px;margin-top:34px;max-width:760px;line-height:1.7;text-transform:uppercase"></div>
+    </div>
+    <canvas class="dial" id="dial" width="520" height="520"></canvas>
+  </div>
+
+  <!-- 04 what the world thinks -->
+  <div class="sc" id="s4">
+    <div class="t eyebrow" style="left:100px;top:170px">WHAT THE WORLD THINKS</div>
+    <div style="position:absolute;left:100px;top:250px;width:1720px" id="themes"></div>
+  </div>
+
+  <!-- 05 end -->
+  <div class="sc" id="s5">
+    <div class="t display" id="endword" style="left:50%;top:620px;transform:translateX(-50%)">POLYMARCT</div>
+    <div class="t eyebrow" id="endtag" style="left:50%;top:800px;transform:translateX(-50%)">THE INFORMATION LAYER OF ARC</div>
+    <div class="t mono acid" id="endsig" style="left:50%;top:858px;transform:translateX(-50%);font-size:20px;letter-spacing:6px">SETTLES IN USDC ON ARC</div>
+  </div>
+
+  <div class="layer scan"></div>
+  <div class="layer grain"></div>
+  <div class="layer vig"></div>
+  <div class="layer flash" id="flash"></div>
+</div>
+
+<script src="motion.js"></script>
+<script>
+const net = MO.hidpi(document.getElementById("net"));
+const fx  = MO.hidpi(document.getElementById("fx"));
+const $ = id => document.getElementById(id);
+const E = MO.E, lerp = MO.lerp, inv = MO.inv, clamp = MO.clamp;
+const rnd = MO.rng("network");
+
+const CATS = ["CRYPTO","ARC","POLITICS","TECHNOLOGY","BUSINESS","SPORTS","CULTURE"];
+const COL  = { CRYPTO:"#CCFF00", ARC:"#2F6BFF", POLITICS:"#F2EFE9", TECHNOLOGY:"#8A8F94", BUSINESS:"#7FE0C0", SPORTS:"#FF4D2E", CULTURE:"#C78BFF" };
+const LBL  = ["BTC>125K","FED CUT","ARC 1M TX","ETH>5K","ETF FLOW","USDC 30%","TVL 100M","NVDA BEAT","AI CAPEX","STABLE 1B",
+              "RATES","CPI","PERPS LIVE","L2 ATH","BRENT 90","IPO WINDOW","BOX OFFICE","UCL","SUPER BOWL","QUANTUM"];
+
+/* a deterministic graph: 50 nodes, edges from shared exposure */
+const N = 50;
+const nodes = Array.from({length:N},(_,i)=>{
+  const cat = CATS[(rnd()*CATS.length)|0];
+  const ang = (i/N)*Math.PI*2 + rnd()*.5;
+  const rad = 120 + rnd()*300;
+  return { i, cat, col: COL[cat], p: .12+rnd()*.78,
+    x: Math.cos(ang)*rad, y: Math.sin(ang)*rad*.62, vx:0, vy:0,
+    r: 7 + rnd()*15, lbl: LBL[(rnd()*LBL.length)|0], born: .04 + rnd()*.7 };
+});
+const edges = [];
+for (let a=0;a<N;a++) for (let b=a+1;b<N;b++){
+  if (nodes[a].cat === nodes[b].cat ? rnd()>.62 : rnd()>.93)
+    edges.push({ a:nodes[a], b:nodes[b], born: Math.max(nodes[a].born, nodes[b].born) + .02 + rnd()*.18 });
+}
+
+const S = { born:0, zoom:.2, cx:0, cy:0, labels:0, dim:0, pulse:0 };
+const MARK = { s: 0 };
+
+function physics(){
+  for (let i=0;i<N;i++) for (let j=i+1;j<N;j++){
+    const a=nodes[i], b=nodes[j];
+    let dx=b.x-a.x, dy=b.y-a.y, d2=dx*dx+dy*dy||1;
+    if (d2>140000) continue;
+    const f=5200/d2, d=Math.sqrt(d2), fx2=dx/d*f, fy2=dy/d*f;
+    a.vx-=fx2; a.vy-=fy2; b.vx+=fx2; b.vy+=fy2;
+  }
+  edges.forEach(e=>{
+    const dx=e.b.x-e.a.x, dy=e.b.y-e.a.y, d=Math.hypot(dx,dy)||1;
+    const f=(d-210)*.0022, fx2=dx/d*f, fy2=dy/d*f;
+    e.a.vx+=fx2; e.a.vy+=fy2; e.b.vx-=fx2; e.b.vy-=fy2;
+  });
+  nodes.forEach(n=>{ n.vx-=n.x*.0022; n.vy-=n.y*.0034; n.vx*=.88; n.vy*=.88; n.x+=n.vx; n.y+=n.vy; });
+}
+
+function drawNet(t){
+  net.clearRect(0,0,1920,1080);
+  net.save();
+  net.translate(960 + S.cx, 540 + S.cy);
+  net.scale(S.zoom, S.zoom);
+
+  edges.forEach(e=>{
+    const a = clamp((S.born - e.born)*4, 0, 1);
+    if (a<=0) return;
+    const gx = lerp(e.a.x, e.b.x, a), gy = lerp(e.a.y, e.b.y, a);
+    net.beginPath(); net.moveTo(e.a.x, e.a.y); net.lineTo(gx, gy);
+    net.strokeStyle = `rgba(242,239,233,${.10*a*(1-S.dim*.7)})`;
+    net.lineWidth = 1.4/S.zoom*.9;
+    net.stroke();
+  });
+
+  nodes.forEach(n=>{
+    const a = clamp((S.born - n.born)*5, 0, 1);
+    if (a<=0) return;
+    const pop = E.settle(clamp((S.born-n.born)*4,0,1));
+    const r = n.r*pop;
+    const alpha = a*(1-S.dim*.65);
+    net.beginPath();
+    net.arc(n.x, n.y, r+5, -Math.PI/2, -Math.PI/2 + Math.PI*2*n.p);
+    net.strokeStyle = n.col; net.globalAlpha = alpha*.85; net.lineWidth = 2.6/S.zoom*1.4; net.stroke();
+    net.beginPath(); net.arc(n.x, n.y, r, 0, 7);
+    net.fillStyle = "#08090A"; net.globalAlpha = alpha; net.fill();
+    net.strokeStyle = n.col; net.lineWidth = 1.6/S.zoom*1.4; net.stroke();
+    if (S.pulse > 0 && n.i % 7 === ((t*1.4)|0) % 7){
+      net.beginPath(); net.arc(n.x, n.y, r + 26*S.pulse, 0, 7);
+      net.strokeStyle = n.col; net.globalAlpha = alpha*(1-S.pulse)*.8; net.lineWidth = 2/S.zoom; net.stroke();
+    }
+    if (S.labels > 0 && n.r > 13){
+      net.globalAlpha = alpha*S.labels;
+      net.font = `500 ${13/S.zoom*1.1}px 'JetBrains Mono',ui-monospace,monospace`;
+      net.fillStyle = "rgba(242,239,233,.72)";
+      net.fillText(n.lbl, n.x + r + 10/S.zoom, n.y + 4/S.zoom);
+    }
+    net.globalAlpha = 1;
+  });
+  net.restore();
+}
+
+/* the index dial */
+function drawDial(v, on){
+  const c = $("dial"), ctx = c.getContext("2d");
+  ctx.clearRect(0,0,520,520);
+  if (!on) return;
+  const cx=260, cy=260, R=200;
+  ctx.strokeStyle="rgba(242,239,233,.12)"; ctx.lineWidth=1;
+  for (let i=0;i<72;i++){
+    const a = -Math.PI/2 + (i/72)*Math.PI*2;
+    const r0 = R - (i%6===0 ? 22 : 11);
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*r0, cy+Math.sin(a)*r0);
+    ctx.lineTo(cx+Math.cos(a)*R, cy+Math.sin(a)*R);
+    ctx.stroke();
+  }
+  ctx.beginPath(); ctx.arc(cx,cy,R-34,-Math.PI/2,-Math.PI/2+Math.PI*2*(v/100));
+  ctx.strokeStyle="#CCFF00"; ctx.lineWidth=14; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,R-34,0,7);
+  ctx.strokeStyle="rgba(242,239,233,.08)"; ctx.lineWidth=14; ctx.stroke();
+  const a = -Math.PI/2 + Math.PI*2*(v/100);
+  ctx.beginPath(); ctx.arc(cx+Math.cos(a)*(R-34), cy+Math.sin(a)*(R-34), 11, 0, 7);
+  ctx.fillStyle="#CCFF00"; ctx.fill();
+}
+
+const THEMES = [["CRYPTO",71,"BULLISH"],["AI",83,"BULLISH"],["US ECONOMY",52,"NEUTRAL"],["TECHNOLOGY",76,"BULLISH"],["ARC",68,"BULLISH"],["RISK",34,"BEARISH"]];
+$("themes").innerHTML = THEMES.map(([n,v,r])=>`
+  <div class="themebar"><div class="nm">${n}</div><div class="tr"><i style="width:0%"></i></div>
+  <div class="vl"><span class="${r==="BEARISH"?"no":r==="NEUTRAL"?"muted":"acid"}">${r}</span> <b>${v}%</b></div></div>`).join("");
+
+function corners(a){ ["c1","c2","c3","c4"].forEach(id=>$(id).style.opacity = String(a)); }
+function scene(el,on){ el.style.opacity = on?1:0; }
+
+MO.mount({
+  duration: 24,
+  title: "THE NETWORK",
+  reset(){
+    ["s1","s2","s3","s4","s5"].forEach(id => $(id).style.opacity = 0);
+    $("flash").style.opacity = 0;
+    Object.assign(S, { born:0, zoom:2.6, cx:0, cy:0, labels:0, dim:1, pulse:0 });
+    MARK.s = 0;
+  },
+  render(tl){
+
+    /* ---- 01 one question ---- */
+    tl.beat(0, 3.0, (p,t)=>{
+      scene($("s1"),true); scene($("s2"),false); scene($("s3"),false); scene($("s4"),false); scene($("s5"),false);
+      corners(clamp(inv(p,.3,.7),0,1)*.9);
+      S.born = 0; S.zoom = lerp(2.6, 1.6, E.outExpo(p)); S.cx=0; S.cy=0; S.labels=0; S.dim=1; S.pulse=0;
+      $("seedlab").style.opacity = String(clamp(inv(p,.06,.22),0,1));
+      const w = E.outExpo(clamp(inv(p,.14,.52),0,1));
+      $("seed").style.clipPath = `inset(0 ${(1-w)*100}% 0 0)`;
+      $("seed").style.opacity = String(1 - clamp(inv(p,.82,1),0,1));
+      $("seedlab").style.opacity = String(clamp(inv(p,.06,.22),0,1) - clamp(inv(p,.82,1),0,1));
+    });
+
+    /* ---- 02 the graph grows ---- */
+    tl.beat(3.0, 10.0, (p,t)=>{
+      scene($("s1"),false); scene($("s2"),p>.46); scene($("s3"),false);
+      corners(.9);
+      S.born = E.outQuad(p);
+      S.dim = 1 - clamp(p*2.6,0,1);
+      S.zoom = lerp(1.6, .74, E.inOutCubic(p));
+      S.labels = clamp(inv(p,.52,.86),0,1);
+      S.pulse = (Math.sin(t*2.4)*.5+.5)*.6;
+      if (p > .46){
+        const w = E.outExpo(clamp(inv(p,.48,.78),0,1));
+        $("mapline").style.clipPath = `inset(0 ${(1-w)*100}% 0 0)`;
+        $("mapline").style.opacity = String(1 - clamp(inv(p,.9,1),0,1));
+      }
+    });
+
+    /* ---- 03 the future index ---- */
+    tl.beat(10.0, 15.4, (p,t)=>{
+      scene($("s2"),false); scene($("s3"),true); scene($("s4"),false);
+      corners(.5);
+      S.zoom = lerp(.74, .5, E.inOutCubic(clamp(p*1.6,0,1)));
+      S.cx = lerp(0, 560, E.inOutCubic(clamp(p*1.6,0,1)));
+      S.cy = lerp(0, 250, E.inOutCubic(clamp(p*1.6,0,1)));
+      S.dim = clamp(inv(p,0,.3),0,1)*.92;
+      S.labels = 1 - clamp(inv(p,0,.3),0,1);
+      S.pulse = .3;
+      const c = E.outExpo(clamp(inv(p,.06,.52),0,1));
+      const v = 72.4*c + (p>.52 ? Math.sin(t*6)*.18 : 0);
+      $("fi").textContent = v.toFixed(1);
+      $("fid").textContent = "+" + (4.7*c).toFixed(1) + "%";
+      drawDial(v, true);
+      $("dial").style.opacity = String(clamp(inv(p,.04,.3),0,1));
+      $("firead").style.opacity = String(clamp(inv(p,.46,.68),0,1));
+      $("firead").textContent = "Market confidence is increasing across technology, crypto and macro markets. Ten markets, equally weighted, recalculated every tick. Not an investment product.";
+    });
+    tl.beat(15.1, 15.5, (p,t,on) => { $("flash").style.opacity = on ? String((1-p)*.26) : "0"; });
+
+    /* ---- 04 what the world thinks ---- */
+    tl.beat(15.4, 19.6, (p,t)=>{
+      scene($("s3"),false); scene($("s4"),true); scene($("s5"),false);
+      corners(.4);
+      S.zoom = lerp(.5,.42,p); S.cx = lerp(560,0,E.inOutCubic(clamp(p*2,0,1))); S.cy = lerp(250,0,E.inOutCubic(clamp(p*2,0,1)));
+      S.dim = .88; S.labels = 0; S.pulse = .2;
+      [...$("themes").children].forEach((row,i)=>{
+        const a = clamp(inv(p, .06+i*.085, .3+i*.085),0,1);
+        row.style.opacity = String(a);
+        row.style.transform = `translateX(${(1-E.outExpo(a))*40}px)`;
+        row.querySelector("i").style.width = (THEMES[i][1]*E.outExpo(a)) + "%";
+      });
+      $("s4").style.opacity = String(1 - clamp(inv(p,.93,1),0,1));
+    });
+
+    /* ---- 05 collapse into the mark ---- */
+    tl.beat(19.6, 24, (p,t)=>{
+      scene($("s4"),false); scene($("s5"),true);
+      corners(.4*(1-clamp(inv(p,.1,.4),0,1)));
+      const k = E.inOutCubic(clamp(p*1.5,0,1));
+      S.zoom = lerp(.42, .04, k); S.dim = lerp(.88,1,k); S.pulse = 0; S.labels = 0;
+      const w = E.outExpo(clamp(inv(p,.3,.6),0,1));
+      $("endword").style.clipPath = `inset(0 ${(1-w)*100}% 0 0)`;
+      $("endtag").style.opacity = String(clamp(inv(p,.5,.68),0,1));
+      $("endsig").style.opacity = String(clamp(inv(p,.6,.78),0,1));
+      const out = clamp(inv(p,.9,1),0,1);
+      $("s5").style.opacity = String(1-out);
+      MARK.s = lerp(0, 230, E.settle(clamp(inv(p,.18,.6),0,1))) * (1-out);
+    });
+  }
+});
+
+(function raf(now){
+  const t = (now||0)/1000;
+  physics();
+  drawNet(t);
+  fx.clearRect(0,0,1920,1080);
+  if (MARK.s > 1){
+    fx.save();
+    fx.shadowColor = "rgba(204,255,0,.55)"; fx.shadowBlur = 70;
+    MO.drawMark(fx, 960 - MARK.s/2, 380 - MARK.s/2, MARK.s, { draw:1, shift:Math.sin(t*1.6)*1.4 });
+    fx.restore();
+  }
+  requestAnimationFrame(raf);
+})();
+</script>
+</body>
+</html>

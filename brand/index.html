@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRAND SYSTEM // POLYMARCT</title>
+<meta name="description" content="The Polymarct identity: the split unit mark, the motion films, and the content studio.">
+<link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
+<meta name="theme-color" content="#08090A">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/polymarct.css">
+<style>
+  .grid3{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .cell{background:var(--black);padding:26px;display:flex;flex-direction:column;gap:14px}
+  .cell.warm{background:var(--white)}
+  .cell.acidbg{background:var(--acid)}
+  .cell img{width:100%;max-width:150px}
+  .film{position:relative;border:1px solid var(--line);background:var(--graphite);overflow:hidden}
+  .film iframe{width:100%;aspect-ratio:16/9;border:0;display:block;background:#000}
+  .film .cap{display:flex;justify-content:space-between;gap:16px;padding:16px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .sw{height:88px;border:1px solid var(--line);display:flex;align-items:flex-end;padding:10px;font-family:var(--mono);font-size:10px;letter-spacing:.12em}
+  .constr{background:
+    linear-gradient(to right,rgba(204,255,0,.14) 1px,transparent 1px) 0 0/12.5% 100%,
+    linear-gradient(to bottom,rgba(204,255,0,.14) 1px,transparent 1px) 0 0/100% 12.5%;
+    border:1px solid var(--line);padding:26px}
+</style>
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:26px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>BRAND SYSTEM</div>
+  <h1 class="display--sm" style="margin-top:16px">The mark is<br>an argument.</h1>
+  <p class="lede" style="margin-top:18px">One square is one unit of probability, the thing that pays out at settlement. The boundary running through it is not decoration, it is the price: the stepped path that separates the YES mass from the NO void. When the market reprices, the logo reprices.</p>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">01 / THE MARK</div><h2 class="h2">The split unit.</h2></div>
+  <span class="sub">Pure geometry, no type inside the mark, no effects. Reads at 16px as an asymmetric split and at poster size as a price path.</span></div>
+
+  <div class="cols cols--side" style="margin-bottom:1px">
+    <div class="constr">
+      <img src="logo/mark-on-black.svg" alt="Polymarct mark on the construction grid" style="width:100%;max-width:420px;display:block;margin:0 auto">
+    </div>
+    <div class="panel">
+      <div class="panel-h">CONSTRUCTION</div>
+      <div class="kv"><span class="k">FRAME</span><span>52 / 64 UNITS</span></div>
+      <div class="kv"><span class="k">EDGE</span><span>4 STEPS, MITRED</span></div>
+      <div class="kv"><span class="k">YES MASS</span><span class="acid">ACID FILL</span></div>
+      <div class="kv"><span class="k">NO VOID</span><span>3 TERMINAL HAIRLINES</span></div>
+      <div class="kv"><span class="k">LAST PRINT</span><span>6 UNIT SQUARE</span></div>
+      <div class="kv"><span class="k">CLEAR SPACE</span><span>1 BAR HEIGHT</span></div>
+      <div class="kv"><span class="k">MINIMUM</span><span>16 PX</span></div>
+    </div>
+  </div>
+
+  <div class="grid3">
+    <div class="cell"><img src="logo/mark.svg" alt="Primary mark"><span class="meta">PRIMARY // ACID ON GRAPHITE</span></div>
+    <div class="cell warm"><img src="logo/mark-on-warm.svg" alt="Mark on warm white"><span class="meta" style="color:#5C6166">WARM WHITE GROUND</span></div>
+    <div class="cell"><img src="logo/mark-mono-white.svg" alt="Mono white"><span class="meta">MONO // ONE COLOUR</span></div>
+    <div class="cell"><img src="logo/mark-outline.svg" alt="Outline"><span class="meta">OUTLINE // ENGRAVING, STITCH</span></div>
+  </div>
+
+  <div class="grid3" style="margin-top:24px;grid-template-columns:1fr">
+    <div class="cell"><img src="logo/lockup-dark.svg" alt="Lockup dark" style="max-width:520px"><span class="meta">HORIZONTAL LOCKUP // DARK</span></div>
+    <div class="cell warm"><img src="logo/lockup-light.svg" alt="Lockup light" style="max-width:520px"><span class="meta" style="color:#5C6166">HORIZONTAL LOCKUP // LIGHT</span></div>
+  </div>
+
+  <p class="meta" style="margin-top:18px">DO NOT: RECOLOUR THE YES MASS // ROTATE THE MARK // ADD A GRADIENT OR GLOW IN PRINT // STRETCH THE FRAME // PLACE TYPE INSIDE THE SQUARE</p>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">02 / THE FILMS</div><h2 class="h2">Motion carries information.</h2></div>
+  <span class="sub">Three pieces, authored at 1920&times;1080 on a deterministic timeline. Press play, or open one full screen and screen record it: every run is frame identical.</span></div>
+
+  <div class="cols" style="gap:28px">
+    <div class="film">
+      <iframe src="motion/01-ident.html?rec=1" title="Ident" loading="lazy"></iframe>
+      <div class="cap">
+        <div><div class="h3">01 // IDENT</div><div class="meta" style="margin-top:6px">15S LOOP // BRAND OPENER</div></div>
+        <div class="row" style="gap:8px"><a class="btn btn--sm" href="motion/01-ident.html" target="_blank">OPEN</a><a class="btn btn--sm" href="motion/01-ident.html?rec=1" target="_blank">CLEAN</a></div>
+      </div>
+    </div>
+    <div class="film">
+      <iframe src="motion/02-flow.html?rec=1" title="The Flow" loading="lazy"></iframe>
+      <div class="cap">
+        <div><div class="h3">02 // THE FLOW</div><div class="meta" style="margin-top:6px">26S // DISCOVER, TRADE, FOLLOW, WHY, RESOLVE, SETTLE</div></div>
+        <div class="row" style="gap:8px"><a class="btn btn--sm" href="motion/02-flow.html" target="_blank">OPEN</a><a class="btn btn--sm" href="motion/02-flow.html?rec=1" target="_blank">CLEAN</a></div>
+      </div>
+    </div>
+    <div class="film">
+      <iframe src="motion/03-network.html?rec=1" title="The Network" loading="lazy"></iframe>
+      <div class="cap">
+        <div><div class="h3">03 // THE NETWORK</div><div class="meta" style="margin-top:6px">24S // MARKET MAP, FUTURE INDEX, WHAT THE WORLD THINKS</div></div>
+        <div class="row" style="gap:8px"><a class="btn btn--sm" href="motion/03-network.html" target="_blank">OPEN</a><a class="btn btn--sm" href="motion/03-network.html?rec=1" target="_blank">CLEAN</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:28px">
+    <div class="panel-h">HOW TO CAPTURE</div>
+    <div class="kv"><span class="k">CLEAN PLATE</span><span>ADD ?rec=1 TO HIDE THE TRANSPORT</span></div>
+    <div class="kv"><span class="k">SEEK</span><span>ADD &amp;t=6 TO START AT 6 SECONDS</span></div>
+    <div class="kv"><span class="k">KEYS</span><span>SPACE PLAY // R RESTART // H HIDE // , . STEP</span></div>
+    <div class="kv"><span class="k">RECORD</span><span>FULL SCREEN AT 1920&times;1080, ANY SCREEN RECORDER</span></div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">03 / COLOUR AND TYPE</div><h2 class="h2">Expensive, not loud.</h2></div></div>
+  <div class="cols cols--2">
+    <div>
+      <div class="cols cols--2" style="gap:1px">
+        <div class="sw" style="background:#08090A">GRAPHITE BLACK 08090A</div>
+        <div class="sw" style="background:#F2EFE9;color:#08090A">WARM WHITE F2EFE9</div>
+        <div class="sw" style="background:#CCFF00;color:#08090A">ACID CCFF00</div>
+        <div class="sw" style="background:#2F6BFF">ELECTRIC BLUE 2F6BFF</div>
+        <div class="sw" style="background:#FF4D2E">SIGNAL FF4D2E</div>
+        <div class="sw" style="background:#0D0F11">SURFACE 0D0F11</div>
+      </div>
+      <p class="muted" style="font-size:13px;line-height:1.7;margin-top:16px">Acid is an accent, never a field, except where a single graphic is deliberately inverted. No purple, no rainbow, no gradient meshes, no glass.</p>
+    </div>
+    <div class="panel">
+      <div class="panel-h">TYPE</div>
+      <div style="font-size:52px;font-weight:600;letter-spacing:-2.4px;line-height:1">INTER TIGHT 600</div>
+      <p class="muted" style="margin:6px 0 20px;font-size:13px">Headlines, tight tracking, uppercase for statements.</p>
+      <div class="mono" style="font-size:26px;letter-spacing:-.5px">JETBRAINS MONO 500</div>
+      <p class="muted" style="margin:6px 0 0;font-size:13px">Every number, every label, tabular figures. The numbers are the design objects.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">04 / CONTENT</div><h2 class="h2">Market becomes artifact.</h2></div>
+  <a class="btn btn--sm" href="studio.html">OPEN THE CONTENT STUDIO</a></div>
+  <p class="lede">Six export formats rendered from live market state: link preview, X header, signal card, vertical story, hook card and wide banner. Every export is a real PNG drawn at full resolution, not a screenshot of a template.</p>
+</div></section>
+
+<section class="sec"><div class="wrap center">
+  <p class="big-quote">The headline comes later.<br>The price moves first.</p>
+  <a class="btn btn--primary" style="margin-top:26px" href="../index.html">BACK TO THE MARKET &rarr;</a>
+</div></section>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/engine.js"></script>
+<script src="../assets/js/ui.js"></script>
+<script>UI.mount("");</script>
+</body>
+</html>

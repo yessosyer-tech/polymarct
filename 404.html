@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THIS MARKET DOESN'T EXIST // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+</head>
+<body>
+
+<section class="hero" style="min-height:min(78vh,720px)">
+  <canvas id="field"></canvas>
+  <div class="wrap">
+    <div class="eyebrow"><span class="dot"></span>404 // NO BOOK OPEN</div>
+    <h1 class="display" style="margin-top:22px">This market<br>doesn't exist.</h1>
+    <p class="lede" style="margin-top:18px;font-size:clamp(18px,2.4vw,28px);color:var(--white)">Yet.</p>
+    <div class="row" style="margin-top:28px;flex-wrap:wrap">
+      <a class="btn btn--primary" href="markets.html">RETURN TO THE LIVE MARKET &rarr;</a>
+      <a class="btn" href="create.html">CREATE IT</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec--flush"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">WHILE YOU ARE HERE</div><h2 class="h2">Something is moving.</h2></div></div>
+  <div class="cards" id="live"></div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/field.js"></script>
+<script>
+UI.mount("");
+PM.start();
+document.getElementById("live").innerHTML = PM.sorted("moving").slice(0,4).map(UI.card).join("");
+UI.bindLive();
+</script>
+</body>
+</html>

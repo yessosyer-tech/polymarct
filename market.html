@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MARKET // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+<style>
+  .mkt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,400px);gap:clamp(24px,4vw,56px);align-items:start}
+  @media(max-width:1000px){.mkt-head{grid-template-columns:1fr}}
+  .bigp{font-size:clamp(84px,15vw,200px);font-weight:600;letter-spacing:-.07em;line-height:.8;display:flex;align-items:baseline;gap:14px}
+  .bigp small{font-size:.16em;letter-spacing:.14em;color:var(--muted);font-family:var(--mono)}
+  #chart{width:100%;height:clamp(220px,32vw,360px);cursor:crosshair}
+  .depth{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+  .depth>div{background:var(--black);padding:14px}
+  .dbar{position:relative;font-family:var(--mono);font-size:11px;padding:5px 8px;margin-bottom:2px}
+  .dbar i{position:absolute;inset:0 auto 0 0;opacity:.16}
+  .dbar span{position:relative}
+  .trade-in{display:flex;gap:8px;margin:14px 0}
+  .trade-in input{flex:1;background:var(--black);border:1px solid var(--line);padding:11px;font-family:var(--mono);outline:none}
+  .quick{display:flex;gap:6px}
+  .quick button{border:1px solid var(--line);padding:8px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em}
+  .quick button:hover{border-color:var(--white)}
+</style>
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:0"><div class="wrap">
+  <div class="row row--wrap" style="gap:10px;margin-bottom:22px">
+    <a class="meta" href="markets.html">&larr; ALL MARKETS</a>
+    <span class="meta" id="crumb"></span>
+  </div>
+
+  <div class="mkt-head">
+    <div>
+      <div class="row row--wrap" style="gap:8px;margin-bottom:18px" id="chips"></div>
+      <h1 class="h2" id="q" style="max-width:20ch"></h1>
+      <div class="bigp" style="margin-top:28px"><span id="p"></span><small>YES</small></div>
+      <div class="row row--wrap" style="gap:18px;margin-top:14px">
+        <span class="mono" id="d24" style="font-size:15px"></span>
+        <button class="btn btn--sm" id="why">WHY? &rarr;</button>
+        <button class="btn btn--sm" id="follow">FOLLOW MARKET</button>
+        <button class="btn btn--sm" id="share">SHARE ARTIFACT</button>
+      </div>
+    </div>
+
+    <div class="panel" id="tradebox">
+      <div class="panel-h"><span>TAKE A POSITION</span><span class="mono" id="side-l">YES</span></div>
+      <div class="legs" style="margin-bottom:14px">
+        <button class="leg leg--yes" data-side="YES"><span class="lbl">TAKE YES</span><span class="val" id="py"></span></button>
+        <button class="leg leg--no" data-side="NO"><span class="lbl">TAKE NO</span><span class="val" id="pn"></span></button>
+      </div>
+      <div class="trade-in"><input id="amt" value="100" inputmode="decimal"><span class="meta" style="align-self:center">USDC</span></div>
+      <div class="quick" style="margin-bottom:14px">
+        <button data-amt="25">25</button><button data-amt="100">100</button><button data-amt="500">500</button><button data-amt="2500">2,500</button>
+      </div>
+      <div class="kv"><span class="k">SHARES</span><span id="t-sh"></span></div>
+      <div class="kv"><span class="k">AVG PRICE</span><span id="t-px"></span></div>
+      <div class="kv"><span class="k">PAYOUT IF CORRECT</span><span id="t-po" class="acid"></span></div>
+      <div class="kv"><span class="k">MAX LOSS</span><span id="t-ml" class="down"></span></div>
+      <button class="btn btn--primary btn--block" style="margin-top:16px" id="submit">ENTER MARKET</button>
+      <p class="muted" style="font-size:11px;line-height:1.6;margin:12px 0 0">Positions settle in USDC on Arc. You can lose the full amount committed. Demonstration state, no funds move.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec" style="padding-top:clamp(28px,4vw,48px)"><div class="wrap">
+  <div class="panel-h"><span>PROBABILITY // 24H</span><span class="mono" id="hover-read"></span></div>
+  <canvas id="chart"></canvas>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">MARKET INTELLIGENCE</div><h2 class="h2">The numbers behind the number.</h2></div></div>
+  <div class="statgrid" id="intel"></div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="cols cols--side">
+    <div>
+      <div class="panel-h"><span>WHY THE MARKET IS MOVING</span><span class="mono">DERIVED</span></div>
+      <div class="panel" id="drivers"></div>
+
+      <div class="panel-h" style="margin-top:32px"><span>LIVE TRADES</span><span class="mono acid">STREAMING</span></div>
+      <div class="stream" id="trades"></div>
+
+      <div class="terminal-only">
+        <div class="panel-h" style="margin-top:32px"><span>MARKET DEPTH</span><span class="mono">TERMINAL</span></div>
+        <div class="depth" id="depth"></div>
+        <div class="panel-h" style="margin-top:32px"><span>TRADE HISTORY</span><span class="mono">TERMINAL</span></div>
+        <div class="tblwrap"><table class="tbl" id="hist"></table></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-h"><span>MARKET ACTIVITY</span></div>
+        <p id="act1" style="margin:0 0 10px;font-size:14px"></p>
+        <p id="act2" style="margin:0 0 10px;font-size:14px"></p>
+        <p id="act3" style="margin:0;font-size:14px"></p>
+      </div>
+
+      <div class="panel" id="resolution">
+        <div class="panel-h"><span>RESOLUTION</span><span class="mono acid">THE VERDICT ENGINE</span></div>
+        <div class="kv"><span class="k">CLOSES</span><span id="r-ends"></span></div>
+        <div class="kv"><span class="k">SOURCE</span><span id="r-src" style="text-align:right;max-width:62%"></span></div>
+        <div class="kv"><span class="k">DISPUTE WINDOW</span><span>24H AFTER VERDICT</span></div>
+        <div class="kv"><span class="k">SETTLEMENT</span><span>USDC ON ARC</span></div>
+        <p class="muted" style="font-size:12.5px;line-height:1.65;margin:14px 0 0" id="r-crit"></p>
+        <p class="meta" style="margin-top:14px;line-height:1.7;text-transform:none;letter-spacing:.02em;font-size:11.5px">The question cannot change after trading opens. Criteria, source and resolution time are fixed at creation.</p>
+        <a class="btn btn--sm btn--block" style="margin-top:14px" href="verdict.html">VIEW VERDICT PROCESS</a>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">CONNECTED MARKETS</div><h2 class="h2">The rabbit hole.</h2></div>
+  <a class="btn btn--sm" href="map.html">OPEN THE MARKET MAP</a></div>
+  <div class="cards" id="related"></div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("markets.html"); PM.start();
+
+const id = new URLSearchParams(location.search).get("m") || "btc-125k";
+const m = PM.get(id);
+if (!m) { location.replace("404.html"); }
+
+document.title = m.q + " // POLYMARCT";
+document.getElementById("crumb").textContent = m.cat + " // " + m.id.toUpperCase();
+document.getElementById("q").textContent = m.q;
+document.getElementById("r-ends").textContent = PM.fmt.date(m.ends);
+document.getElementById("r-src").textContent = m.src;
+document.getElementById("r-crit").textContent = m.crit;
+
+let side = "YES";
+function paintHead(){
+  const mo = PM.momentum(m);
+  document.getElementById("chips").innerHTML =
+    `<span class="chip">${m.cat}</span>
+     ${PM.isEarly(m)?`<span class="chip chip--solid">EARLY</span>`:""}
+     <span class="chip ${mo.tone==="acid"?"chip--acid":mo.tone==="blue"?"chip--blue":""}">${mo.label}</span>
+     <span class="chip">${PM.fmt.leftLong(m.ends)} LEFT</span>`;
+  document.getElementById("p").textContent = Math.round(m.yes*100) + "%";
+  const d = document.getElementById("d24");
+  d.textContent = PM.fmt.signed(m.d24) + " / 24H";
+  d.className = "mono " + (m.d24>=0?"up":"down");
+  document.getElementById("py").textContent = PM.fmt.cents(m.yes);
+  document.getElementById("pn").textContent = PM.fmt.cents(1-m.yes);
+  paintTrade();
+  paintIntel();
+  paintDrivers();
+  paintActivity();
+}
+
+/* ---------- trade panel ---------- */
+document.querySelectorAll("[data-side]").forEach(b=>b.onclick=()=>{ side=b.dataset.side; document.getElementById("side-l").textContent=side; paintTrade(); });
+document.querySelectorAll("[data-amt]").forEach(b=>b.onclick=()=>{ document.getElementById("amt").value=b.dataset.amt; paintTrade(); });
+document.getElementById("amt").oninput = paintTrade;
+function paintTrade(){
+  const amt = Math.max(0, parseFloat(document.getElementById("amt").value)||0);
+  const px = side==="YES" ? m.yes : 1-m.yes;
+  const sh = px>0 ? amt/px : 0;
+  document.getElementById("t-sh").textContent = sh.toFixed(2) + " " + side;
+  document.getElementById("t-px").textContent = PM.fmt.cents(px);
+  document.getElementById("t-po").textContent = "$" + sh.toFixed(2);
+  document.getElementById("t-ml").textContent = "$" + amt.toFixed(2);
+  document.getElementById("side-l").textContent = side;
+}
+document.getElementById("submit").onclick = ()=>{
+  const amt = parseFloat(document.getElementById("amt").value)||0;
+  if (amt<=0) { UI.toast("ENTER AN AMOUNT"); return; }
+  const b = document.getElementById("submit");
+  b.textContent = "READING THE MARKET"; b.disabled = true;
+  setTimeout(()=>{ b.textContent="ENTER MARKET"; b.disabled=false;
+    UI.toast("POSITION CONFIRMED // " + amt.toFixed(0) + " USDC " + side);
+  }, 900);
+};
+
+document.getElementById("why").onclick = ()=>UI.whyModal(m.id);
+document.getElementById("follow").onclick = e=>{ e.target.textContent="FOLLOWING"; UI.toast("WATCHING SIGNAL // " + m.cat); };
+document.getElementById("share").onclick = ()=>{
+  UI.openModal(`<div class="panel-h"><span>POLYMARCT SIGNAL</span><span class="mono">SHAREABLE</span></div>
+   <div style="border:1px solid var(--line-strong);padding:26px;background:var(--black)">
+     <div class="meta" style="margin-bottom:16px"><span class="dot" style="width:5px;height:5px;background:var(--acid);border-radius:50%;display:inline-block;margin-right:8px"></span>POLYMARCT SIGNAL</div>
+     <div style="font-size:19px;letter-spacing:-.02em;margin-bottom:20px">${m.q}</div>
+     <div style="display:flex;align-items:baseline;gap:12px">
+       <span style="font-size:64px;font-weight:600;letter-spacing:-.06em">${Math.round(m.yes*100)}%</span>
+       <span class="mono ${m.d24>=0?"up":"down"}">${PM.fmt.signed(m.d24)}</span>
+       <span class="meta">YES</span>
+     </div>
+     <div class="cardmeta" style="margin-top:20px">
+       <span>${PM.fmt.usd(m.vol)} VOLUME</span><span>${PM.fmt.n(m.traders)} TRADERS</span><span>${PM.fmt.left(m.ends)} LEFT</span>
+     </div>
+   </div>
+   <p class="muted" style="font-size:12px;margin-top:14px">Every market generates a shareable artifact. Market becomes artifact becomes social becomes user becomes market.</p>
+   <button class="btn btn--block" style="margin-top:12px" onclick="UI.closeModal()">CLOSE</button>`);
+};
+
+/* ---------- intelligence ---------- */
+function paintIntel(){
+  const rows = [
+    ["PROBABILITY", Math.round(m.yes*100)+"%", PM.fmt.signed(m.d24)+" / 24h", m.d24>=0],
+    ["VOLUME", PM.fmt.usd(m.vol), PM.fmt.usd(m.vol24)+" / 24h", true],
+    ["LIQUIDITY", PM.fmt.usd(m.liq), (m.liq/m.vol>0.3?"deep":"thin versus flow"), m.liq/m.vol>0.3],
+    ["TRADERS", PM.fmt.n(m.traders), PM.fmt.n(m.watchers)+" watching", true],
+    ["LARGEST TRADE", PM.fmt.usd(m.largest), "single fill", true],
+    ["TIME LEFT", PM.fmt.left(m.ends), PM.fmt.date(m.ends).slice(0,12), true],
+    ["MOMENTUM", "", PM.momentum(m).label, true],
+    ["CONFIDENCE", Math.abs(m.yes-0.5)>0.3?"HIGH":Math.abs(m.yes-0.5)>0.15?"MEDIUM":"LOW", "distance from even", true]
+  ];
+  document.getElementById("intel").innerHTML = rows.map(([k,v,d,up])=>
+    `<div class="stat"><div class="k">${k}</div>
+     <div class="v num">${k==="MOMENTUM"?UI.meter(PM.momentum(m).rank):v}</div>
+     <div class="d ${up?"up":"down"}">${d}</div></div>`).join("");
+}
+
+function paintDrivers(){
+  document.getElementById("drivers").innerHTML = PM.drivers(m).map(d=>
+    `<div class="kv"><span class="k">${d.k}</span><span>${d.v} <span class="muted">// ${d.note}</span></span></div>`).join("") +
+    `<p class="muted" style="font-size:12.5px;line-height:1.65;margin:14px 0 0">Drivers are computed from flow and liquidity on this market. Where a market is tied to a scheduled event, the event window is flagged, never interpreted.</p>`;
+}
+
+function paintActivity(){
+  document.getElementById("act1").innerHTML = `<b class="num">${PM.fmt.n(m.watchers)}</b> traders are watching this market.`;
+  const mins = Math.max(3, Math.round((Date.now()-m.lastMove)/60000));
+  document.getElementById("act2").innerHTML = `Consensus changed <b class="num ${m.d24>=0?"up":"down"}">${Math.abs(Math.round(m.d24*100))}%</b> in the last ${mins} minutes of flow.`;
+  document.getElementById("act3").innerHTML = `Top trader by conviction bought <b class="${m.yes>0.5?"acid":"down"}">${m.yes>0.5?"YES":"NO"}</b>.`;
+}
+
+/* ---------- chart ---------- */
+const cv = document.getElementById("chart"), cx = cv.getContext("2d");
+let hoverX = null;
+function drawChart(){
+  const dpr = Math.min(window.devicePixelRatio||1,2);
+  const w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w*dpr; cv.height = h*dpr; cx.setTransform(dpr,0,0,dpr,0,0);
+  cx.clearRect(0,0,w,h);
+  const pts = m.hist, min = Math.max(0, Math.min(...pts)-0.04), max = Math.min(1, Math.max(...pts)+0.04), rng = max-min;
+  const X = i => (i/(pts.length-1))*w;
+  const Y = p => h - ((p-min)/rng)*h;
+
+  // grid + axis labels
+  cx.strokeStyle = "rgba(242,239,233,.07)"; cx.lineWidth=1;
+  cx.font = "10px ui-monospace,monospace"; cx.fillStyle = "rgba(242,239,233,.32)";
+  for (let i=0;i<=4;i++){
+    const p = min + rng*(i/4), y = Y(p);
+    cx.beginPath(); cx.moveTo(0,y); cx.lineTo(w,y); cx.stroke();
+    cx.fillText(Math.round(p*100)+"%", 4, y-4);
+  }
+  // fill
+  cx.beginPath(); cx.moveTo(0,h);
+  pts.forEach((p,i)=>cx.lineTo(X(i),Y(p)));
+  cx.lineTo(w,h); cx.closePath();
+  cx.fillStyle = "rgba(204,255,0,.07)"; cx.fill();
+  // line
+  cx.beginPath();
+  pts.forEach((p,i)=> i?cx.lineTo(X(i),Y(p)):cx.moveTo(X(i),Y(p)));
+  cx.strokeStyle = "#CCFF00"; cx.lineWidth = 1.6; cx.stroke();
+  // last dot
+  cx.beginPath(); cx.arc(X(pts.length-1), Y(pts[pts.length-1]), 3, 0, 7); cx.fillStyle="#CCFF00"; cx.fill();
+
+  if (hoverX!=null){
+    const i = Math.max(0, Math.min(pts.length-1, Math.round((hoverX/w)*(pts.length-1))));
+    cx.beginPath(); cx.moveTo(X(i),0); cx.lineTo(X(i),h);
+    cx.strokeStyle="rgba(242,239,233,.32)"; cx.lineWidth=1; cx.stroke();
+    cx.beginPath(); cx.arc(X(i),Y(pts[i]),3.5,0,7); cx.fillStyle="#F2EFE9"; cx.fill();
+    document.getElementById("hover-read").textContent = Math.round(pts[i]*100)+"% // T-"+(pts.length-1-i)*15+"MIN";
+  } else {
+    document.getElementById("hover-read").textContent = Math.round(pts[pts.length-1]*100)+"% NOW";
+  }
+}
+cv.addEventListener("mousemove", e=>{ hoverX = e.offsetX; drawChart(); });
+cv.addEventListener("mouseleave", ()=>{ hoverX=null; drawChart(); });
+window.addEventListener("resize", drawChart, {passive:true});
+
+/* ---------- live trades ---------- */
+const feed = [];
+function anon(){ const h="0123456789ABCDEF"; let a="0x",b=""; for(let i=0;i<2;i++)a+=h[(Math.random()*16)|0]; for(let i=0;i<3;i++)b+=h[(Math.random()*16)|0]; return a+"..."+b; }
+function pushTrade(){
+  const s = Math.random()>0.5?"YES":"NO";
+  const v = Math.round((300+Math.random()*40000)/100)*100;
+  feed.unshift({ w:anon(), s, v, ts:Date.now() });
+  if (feed.length>12) feed.pop();
+}
+for (let i=0;i<9;i++) pushTrade();
+function paintTrades(){
+  document.getElementById("trades").innerHTML = feed.map(f=>
+    `<div class="ev"><span class="t">${PM.fmt.ago(f.ts)}</span>
+     <span class="kind">WALLET ${f.w}</span>
+     <span class="txt muted">bought</span>
+     <span class="val ${f.s==="YES"?"acid":"down"}">${PM.fmt.usdExact(f.v)} ${f.s}</span></div>`).join("");
+}
+paintTrades();
+
+/* ---------- terminal extras ---------- */
+function paintDepth(){
+  const rows = n => Array.from({length:6},(_,i)=>{
+    const px = n==="YES" ? m.yes - (i+1)*0.01 : 1-m.yes - (i+1)*0.01;
+    const sz = Math.round(m.liq*(0.04+Math.random()*0.10));
+    return `<div class="dbar"><i style="width:${20+i*12}%;background:${n==="YES"?"var(--acid)":"var(--no)"}"></i>
+      <span style="display:flex;justify-content:space-between"><b>${PM.fmt.cents(Math.max(0.01,px))}</b><span class="muted">${PM.fmt.usd(sz)}</span></span></div>`;
+  }).join("");
+  document.getElementById("depth").innerHTML =
+    `<div><div class="meta" style="margin-bottom:10px">YES BIDS</div>${rows("YES")}</div>
+     <div><div class="meta" style="margin-bottom:10px">NO BIDS</div>${rows("NO")}</div>`;
+}
+function paintHist(){
+  const rows = feed.map(f=>`<tr><td class="mono">${PM.fmt.clock(f.ts)}</td><td class="mono muted">${f.w}</td>
+    <td class="${f.s==="YES"?"acid":"down"}">${f.s}</td><td class="r mono">${PM.fmt.usdExact(f.v)}</td>
+    <td class="r mono">${PM.fmt.cents(f.s==="YES"?m.yes:1-m.yes)}</td></tr>`).join("");
+  document.getElementById("hist").innerHTML =
+    `<thead><tr><th>TIME</th><th>WALLET</th><th>SIDE</th><th class="r">SIZE</th><th class="r">PRICE</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+/* related via shared tags */
+document.getElementById("related").innerHTML = PM.state.markets
+  .filter(x=>x.id!==m.id && x.tags.some(t=>m.tags.includes(t)))
+  .slice(0,4).map(UI.card).join("") || UI.empty();
+
+paintHead(); drawChart(); paintDepth(); paintHist(); UI.bindLive();
+
+PM.subscribe(()=>{ paintHead(); drawChart(); });
+setInterval(()=>{ pushTrade(); paintTrades(); paintHist(); }, 4200);
+setInterval(paintDepth, 6000);
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE CONVICTION INDEX // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:26px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>THE CONVICTION INDEX</div>
+  <h1 class="display--sm" style="margin-top:18px">Consensus is cheap.<br>Conviction is expensive.</h1>
+  <p class="lede" style="margin-top:20px">Traders are ranked on risk adjusted performance across resolved markets, not on how much money they moved. Size alone is not skill, and a leaderboard that rewards size is a leaderboard that rewards wash trading.</p>
+</div></section>
+
+<div class="ticker" id="ticker"></div>
+
+<section class="sec sec--flush" style="padding-top:32px"><div class="wrap">
+  <div class="filters" id="sorts">
+    <button data-k="conv" class="on">CONVICTION</button><button data-k="roi">ROI</button><button data-k="acc">ACCURACY</button><button data-k="n">RESOLVED</button><button data-k="vol">VOLUME</button>
+  </div>
+  <div class="tblwrap"><table class="tbl" id="tbl"></table></div>
+  <p class="meta" style="margin-top:16px">WALLETS ARE DISPLAYED TRUNCATED. NO POSITION SIZES, BALANCES OR IDENTITIES ARE EXPOSED.</p>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">METHOD</div><h2 class="h2">How the index resists gaming.</h2></div></div>
+  <div class="cols cols--2">
+    <div class="panel"><div class="panel-h">WHAT COUNTS</div>
+      <div class="kv"><span class="k">RESOLVED ONLY</span><span>open positions score nothing</span></div>
+      <div class="kv"><span class="k">RISK ADJUSTED</span><span>return per unit of variance</span></div>
+      <div class="kv"><span class="k">ENTRY TIMING</span><span>early correct beats late correct</span></div>
+      <div class="kv"><span class="k">BREADTH</span><span>across categories, not one market</span></div>
+      <div class="kv"><span class="k">CONSISTENCY</span><span>sustained over a rolling window</span></div>
+    </div>
+    <div class="panel"><div class="panel-h">WHAT DOES NOT COUNT</div>
+      <div class="kv"><span class="k">RAW VOLUME</span><span>excluded as a ranking input</span></div>
+      <div class="kv"><span class="k">SELF MATCHED FLOW</span><span>detected and discarded</span></div>
+      <div class="kv"><span class="k">NEAR CERTAIN MARKETS</span><span>weighted down by price</span></div>
+      <div class="kv"><span class="k">SYBIL CLUSTERS</span><span>funding graph clustering</span></div>
+      <div class="kv"><span class="k">LATE PILE ON</span><span>scored against entry price</span></div>
+      <p class="muted" style="font-size:12.5px;line-height:1.65;margin:14px 0 0">Anti gaming is a product requirement, not a nice to have. A leaderboard is an incentive, and every incentive gets farmed.</p>
+    </div>
+  </div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("leaderboard.html"); PM.start(); UI.ticker(document.getElementById("ticker"));
+
+let key="conv";
+function paint(){
+  const rows = TRADERS.slice().sort((a,b)=>b[key]-a[key]).map((t,i)=>
+    `<tr><td class="mono ${i<3?"acid":"muted"}">${String(i+1).padStart(2,"0")}</td>
+      <td class="mono">${t.w}</td>
+      <td class="mono"><b>${t.conv.toFixed(1)}</b></td>
+      <td class="r mono ${t.roi>=0?"up":"down"}">${PM.fmt.signed(t.roi)}</td>
+      <td class="r mono">${Math.round(t.acc*100)}%</td>
+      <td class="r mono">${t.n}</td>
+      <td class="r mono muted">${PM.fmt.usd(t.vol)}</td>
+      <td class="r mono muted">${t.streak}</td></tr>`).join("");
+  document.getElementById("tbl").innerHTML =
+    `<thead><tr><th></th><th>WALLET</th><th>CONVICTION</th><th class="r">ROI</th><th class="r">ACCURACY</th><th class="r">RESOLVED</th><th class="r">VOLUME</th><th class="r">STREAK</th></tr></thead><tbody>${rows}</tbody>`;
+}
+paint();
+document.getElementById("sorts").onclick = e=>{
+  if(!e.target.dataset.k) return;
+  key = e.target.dataset.k;
+  document.querySelectorAll("#sorts button").forEach(b=>b.classList.toggle("on", b.dataset.k===key));
+  paint();
+};
+</script>
+</body>
+</html>

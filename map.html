@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE MARKET MAP // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+<style>
+  .mapwrap{position:relative;border:1px solid var(--line);background:var(--graphite);height:clamp(460px,72vh,860px);overflow:hidden}
+  #map{width:100%;height:100%;cursor:grab}
+  #map.drag{cursor:grabbing}
+  .maphud{position:absolute;left:16px;top:16px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+  .mapctl{position:absolute;right:16px;top:16px;display:flex;gap:6px}
+  .mapctl button{border:1px solid var(--line-strong);background:rgba(8,9,10,.8);padding:8px 11px;font-family:var(--mono);font-size:11px}
+  .mapctl button:hover{border-color:var(--white)}
+  .tip{position:absolute;pointer-events:none;background:var(--black);border:1px solid var(--line-strong);padding:12px 14px;max-width:290px;display:none;z-index:5}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--muted)}
+  .legend i{width:8px;height:8px;border-radius:50%;display:block}
+</style>
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:24px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>THE MARKET MAP</div>
+  <h1 class="display--sm" style="margin-top:18px">Every question<br>is connected.</h1>
+  <p class="lede" style="margin-top:20px">Markets are nodes. Edges are shared exposure: the same asset, the same event, the same underlying driver. Rates move crypto liquidity, crypto liquidity moves ETF flow, ETF flow moves BTC. Zoom out and the whole prediction ecosystem is one object.</p>
+</div></section>
+
+<div class="wrap" style="padding-bottom:clamp(40px,6vw,80px)">
+  <div class="mapwrap">
+    <canvas id="map"></canvas>
+    <div class="maphud">
+      <span class="meta" id="hud-n"></span>
+      <span class="meta" id="hud-e"></span>
+      <span class="meta" id="hud-z"></span>
+    </div>
+    <div class="mapctl">
+      <button id="zin">+</button><button id="zout">&minus;</button><button id="reset">RESET</button>
+    </div>
+    <div class="tip" id="tip"></div>
+  </div>
+  <div class="legend" id="legend"></div>
+  <p class="meta" style="margin-top:14px">DRAG TO PAN // SCROLL TO ZOOM // CLICK A NODE TO ENTER THE MARKET // NODE SIZE IS VOLUME // RING IS PROBABILITY</p>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("map.html"); PM.start();
+
+const COLORS = { CRYPTO:"#CCFF00", ARC:"#2F6BFF", POLITICS:"#F2EFE9", SPORTS:"#FF4D2E", TECHNOLOGY:"#8A8F94", BUSINESS:"#7FE0C0", CULTURE:"#C78BFF" };
+document.getElementById("legend").innerHTML = Object.entries(COLORS)
+  .map(([k,v])=>`<span><i style="background:${v}"></i>${k}</span>`).join("");
+
+const cv = document.getElementById("map"), cx = cv.getContext("2d"), tip = document.getElementById("tip");
+let W=0,H=0,dpr=1, nodes=[], edges=[], view={x:0,y:0,k:1}, drag=null, hover=null;
+
+nodes = PM.state.markets.map((m,i)=>({
+  m, x:Math.cos(i)*220+Math.random()*60, y:Math.sin(i*1.7)*180+Math.random()*60, vx:0, vy:0,
+  r: 5 + Math.min(16, Math.sqrt(m.vol/1e6)*4)
+}));
+const byId = Object.fromEntries(nodes.map(n=>[n.m.id,n]));
+PM.state.markets.forEach(a=>PM.state.markets.forEach(b=>{
+  if (a.id>=b.id) return;
+  const shared = a.tags.filter(t=>b.tags.includes(t));
+  if (shared.length) edges.push({ a:byId[a.id], b:byId[b.id], w:shared.length, tag:shared[0] });
+}));
+document.getElementById("hud-n").textContent = nodes.length + " MARKETS";
+document.getElementById("hud-e").textContent = edges.length + " CONNECTIONS";
+
+function resize(){
+  dpr = Math.min(window.devicePixelRatio||1,2);
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width=W*dpr; cv.height=H*dpr; cx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize", resize, {passive:true});
+resize();
+
+function step(){
+  // repulsion
+  for (let i=0;i<nodes.length;i++) for (let j=i+1;j<nodes.length;j++){
+    const a=nodes[i], b=nodes[j];
+    let dx=b.x-a.x, dy=b.y-a.y, d2=dx*dx+dy*dy||1;
+    if (d2 > 90000) continue;
+    const f = 2600/d2, d=Math.sqrt(d2);
+    const fx=dx/d*f, fy=dy/d*f;
+    a.vx-=fx; a.vy-=fy; b.vx+=fx; b.vy+=fy;
+  }
+  // springs
+  edges.forEach(e=>{
+    const dx=e.b.x-e.a.x, dy=e.b.y-e.a.y, d=Math.hypot(dx,dy)||1;
+    const target = 150 - e.w*14;
+    const f = (d-target)*0.0016*e.w;
+    const fx=dx/d*f, fy=dy/d*f;
+    e.a.vx+=fx; e.a.vy+=fy; e.b.vx-=fx; e.b.vy-=fy;
+  });
+  // centring + damping
+  nodes.forEach(n=>{
+    n.vx -= n.x*0.0016; n.vy -= n.y*0.0016;
+    n.vx*=0.86; n.vy*=0.86;
+    n.x+=n.vx; n.y+=n.vy;
+  });
+}
+
+function draw(){
+  cx.clearRect(0,0,W,H);
+  cx.save();
+  cx.translate(W/2+view.x, H/2+view.y); cx.scale(view.k, view.k);
+
+  edges.forEach(e=>{
+    const on = hover && (e.a===hover||e.b===hover);
+    cx.beginPath(); cx.moveTo(e.a.x,e.a.y); cx.lineTo(e.b.x,e.b.y);
+    cx.strokeStyle = on ? "rgba(204,255,0,.55)" : "rgba(242,239,233,.07)";
+    cx.lineWidth = on ? 1.2 : 0.6;
+    cx.stroke();
+  });
+
+  nodes.forEach(n=>{
+    const c = COLORS[n.m.cat] || "#F2EFE9";
+    const on = hover===n;
+    // probability ring
+    cx.beginPath(); cx.arc(n.x,n.y,n.r+3.5,-Math.PI/2,-Math.PI/2+Math.PI*2*n.m.yes);
+    cx.strokeStyle = c; cx.lineWidth = 1.6; cx.globalAlpha = on?1:.6; cx.stroke(); cx.globalAlpha=1;
+    // core
+    cx.beginPath(); cx.arc(n.x,n.y,n.r,0,7);
+    cx.fillStyle = on ? c : "rgba(8,9,10,1)";
+    cx.fill();
+    cx.strokeStyle = c; cx.lineWidth = on?1.6:1; cx.stroke();
+    if (view.k>1.15 || on){
+      cx.font = "500 10px ui-monospace,monospace";
+      cx.fillStyle = on ? "#F2EFE9" : "rgba(242,239,233,.42)";
+      cx.fillText(n.m.q.replace(/^Will\s+/,"").slice(0,26), n.x+n.r+7, n.y+3);
+    }
+  });
+  cx.restore();
+  document.getElementById("hud-z").textContent = "ZOOM " + view.k.toFixed(2) + "x";
+}
+
+function loop(){ step(); draw(); requestAnimationFrame(loop); }
+loop();
+
+function toWorld(px,py){ return { x:(px-W/2-view.x)/view.k, y:(py-H/2-view.y)/view.k }; }
+function pick(px,py){
+  const p = toWorld(px,py);
+  let best=null, bd=1e9;
+  nodes.forEach(n=>{ const d=Math.hypot(n.x-p.x,n.y-p.y); if (d<n.r+8 && d<bd){bd=d;best=n;} });
+  return best;
+}
+
+cv.addEventListener("mousedown", e=>{ drag={x:e.offsetX-view.x,y:e.offsetY-view.y,moved:false}; cv.classList.add("drag"); });
+window.addEventListener("mouseup", ()=>{ cv.classList.remove("drag"); setTimeout(()=>drag=null,0); });
+cv.addEventListener("mousemove", e=>{
+  if (drag){ view.x=e.offsetX-drag.x; view.y=e.offsetY-drag.y; drag.moved=true; tip.style.display="none"; return; }
+  hover = pick(e.offsetX,e.offsetY);
+  if (hover){
+    const m=hover.m;
+    tip.style.display="block";
+    tip.style.left = Math.min(W-300, e.offsetX+14)+"px";
+    tip.style.top = Math.min(cv.clientHeight-140, e.offsetY+14)+"px";
+    tip.innerHTML = `<div class="meta" style="margin-bottom:8px">${m.cat}</div>
+      <div style="font-size:14px;letter-spacing:-.01em;margin-bottom:10px">${m.q}</div>
+      <div class="row row--between"><span class="num" style="font-size:22px;font-weight:600">${Math.round(m.yes*100)}%</span>
+      <span class="mono ${m.d24>=0?"up":"down"}">${PM.fmt.signed(m.d24)}</span></div>
+      <div class="meta" style="margin-top:8px">${PM.fmt.usd(m.vol)} VOL // ${m.tags.join(" / ")}</div>`;
+  } else tip.style.display="none";
+});
+cv.addEventListener("mouseleave", ()=>{ hover=null; tip.style.display="none"; });
+cv.addEventListener("click", e=>{
+  if (drag && drag.moved) return;
+  const n = pick(e.offsetX,e.offsetY);
+  if (n) location.href = "market.html?m=" + n.m.id;
+});
+cv.addEventListener("wheel", e=>{
+  e.preventDefault();
+  const k = Math.max(0.35, Math.min(3.2, view.k * (e.deltaY>0?0.92:1.08)));
+  view.k = k;
+}, {passive:false});
+document.getElementById("zin").onclick = ()=>view.k=Math.min(3.2,view.k*1.2);
+document.getElementById("zout").onclick = ()=>view.k=Math.max(0.35,view.k/1.2);
+document.getElementById("reset").onclick = ()=>{ view={x:0,y:0,k:1}; };
+</script>
+</body>
+</html>

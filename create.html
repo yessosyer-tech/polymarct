@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CREATE A MARKET // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+<style>.check{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.check:last-child{border-bottom:0}
+.check b{font-family:var(--mono);font-size:11px;flex:none;width:16px}</style>
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:24px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>CREATE A MARKET</div>
+  <h1 class="display--sm" style="margin-top:18px">One question.<br>Two outcomes.<br>No ambiguity.</h1>
+  <p class="lede" style="margin-top:20px">A prediction market lives or dies on its resolution. Every market needs to state exactly what makes it YES, exactly what makes it NO, exactly when it resolves and exactly which source decides. Questions that cannot answer those four things are rejected.</p>
+</div></section>
+
+<section class="sec sec--flush" style="padding-top:26px"><div class="wrap">
+  <div class="cols cols--side">
+    <div>
+      <div class="field">
+        <label>THE QUESTION</label>
+        <input id="f-q" placeholder="Will BTC reach $125,000 before October 31?">
+        <div class="hint">Must be a closed yes or no question with a deadline. No vague wording, no subjective judgement, no wording that the creator can influence.</div>
+        <div class="errmsg hide" id="e-q"></div>
+      </div>
+
+      <div class="cols cols--2" style="gap:16px">
+        <div class="field"><label>CATEGORY</label><select id="f-cat"></select></div>
+        <div class="field"><label>RESOLUTION DATE (UTC)</label><input id="f-date" type="datetime-local"><div class="errmsg hide" id="e-date"></div></div>
+      </div>
+
+      <div class="field">
+        <label>RESOLUTION SOURCE</label>
+        <input id="f-src" placeholder="Coinbase BTC-USD spot, hourly close">
+        <div class="hint">Name the exact feed, publication or contract that decides. Not "the news", not social media, not a person.</div>
+        <div class="errmsg hide" id="e-src"></div>
+      </div>
+
+      <div class="field">
+        <label>WHAT MAKES IT YES</label>
+        <textarea id="f-yes" placeholder="YES if the hourly close on Coinbase BTC-USD prints at or above $125,000.00 at any point before the resolution time."></textarea>
+        <div class="errmsg hide" id="e-yes"></div>
+      </div>
+
+      <div class="field">
+        <label>WHAT MAKES IT NO</label>
+        <textarea id="f-no" placeholder="NO if no such close occurs before the resolution time, including if the feed is discontinued and the fallback source shows no qualifying print."></textarea>
+        <div class="errmsg hide" id="e-no"></div>
+      </div>
+
+      <div class="cols cols--2" style="gap:16px">
+        <div class="field"><label>SEED LIQUIDITY (USDC)</label><input id="f-liq" value="2500" inputmode="decimal"><div class="errmsg hide" id="e-liq"></div></div>
+        <div class="field"><label>OPENING PROBABILITY</label><input id="f-p" value="50" inputmode="decimal"><div class="hint">Percent chance of YES at open.</div></div>
+      </div>
+
+      <div class="field"><label>CREATOR DEPOSIT</label>
+        <div class="panel" style="padding:14px">
+          <div class="kv"><span class="k">DEPOSIT</span><span class="mono">5,000 $PMARC</span></div>
+          <div class="kv"><span class="k">RETURNED</span><span class="mono">ON CLEAN RESOLUTION</span></div>
+          <div class="kv"><span class="k">SLASHED</span><span class="mono down">ON AMBIGUOUS OR MANIPULATED WORDING</span></div>
+        </div>
+      </div>
+
+      <button class="btn btn--primary btn--block" id="submit">SUBMIT FOR VALIDATION</button>
+    </div>
+
+    <div>
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-h"><span>VALIDATION</span><span class="mono" id="score">0 / 8</span></div>
+        <div id="checks"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>PREVIEW</span><span class="mono">LIVE</span></div>
+        <div class="cards" style="grid-template-columns:1fr" id="preview"></div>
+      </div>
+      <div class="panel" style="margin-top:20px">
+        <div class="panel-h">REJECTED WORDING</div>
+        <p class="muted" style="font-size:12.5px;line-height:1.7;margin:0">soon / a lot / significant / major / many / big / moon / pump / probably / might / could / fair / good / bad / best / better / successful / popular / important. Every one of these turns a verdict into an argument.</p>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("create.html"); PM.start();
+
+document.getElementById("f-cat").innerHTML = CATEGORIES.map(c=>`<option>${c}</option>`).join("");
+const d = new Date(Date.now()+30*864e5); d.setSeconds(0,0);
+document.getElementById("f-date").value = d.toISOString().slice(0,16);
+
+const VAGUE = ["soon","a lot","significant","major","many","big","moon","pump","probably","might","could","fair","good","bad","best","better","successful","popular","important","huge","massive"];
+const F = id => document.getElementById(id);
+
+function validate(){
+  const q = F("f-q").value.trim();
+  const src = F("f-src").value.trim();
+  const yes = F("f-yes").value.trim();
+  const no = F("f-no").value.trim();
+  const date = F("f-date").value;
+  const liq = parseFloat(F("f-liq").value)||0;
+  const ql = q.toLowerCase();
+  const vagueHit = VAGUE.filter(v=>ql.includes(v));
+
+  const checks = [
+    { k:"Closed question", ok: q.length>14 && q.endsWith("?"), msg:"Ends with a question mark and reads as a single yes or no question." },
+    { k:"No vague wording", ok: q.length>0 && vagueHit.length===0, msg: vagueHit.length? "Remove: "+vagueHit.join(", ") : "No subjective terms detected." },
+    { k:"Deadline in the question", ok: /\b(before|by|during|on or before|this|next)\b/i.test(q), msg:"The question itself states the window, not only the date field." },
+    { k:"Resolution date in the future", ok: !!date && new Date(date) > new Date(Date.now()+36e5), msg:"At least one hour from now." },
+    { k:"Named resolution source", ok: src.length>=10 && !/twitter|x\.com|telegram|vibes|community/i.test(src), msg:"A specific feed, filing or publication. Social platforms are not a source." },
+    { k:"YES criteria explicit", ok: yes.length>=40 && /\byes\b/i.test(yes), msg:"State the exact condition, including the comparison and the threshold." },
+    { k:"NO criteria explicit", ok: no.length>=40 && /\bno\b/i.test(no), msg:"Cover the failure case and the missing data case." },
+    { k:"Seed liquidity", ok: liq>=500, msg:"Minimum 500 USDC so the opening book is tradeable." }
+  ];
+
+  const passed = checks.filter(c=>c.ok).length;
+  F("score").textContent = passed + " / " + checks.length;
+  F("score").className = "mono " + (passed===checks.length?"acid":"muted");
+  F("checks").innerHTML = checks.map(c=>
+    `<div class="check"><b class="${c.ok?"acid":"down"}">${c.ok?"✓":"✕"}</b>
+     <span><b style="font-family:var(--sans);font-size:13.5px;width:auto">${c.k}</b><br>
+     <span class="muted" style="font-size:12px">${c.msg}</span></span></div>`).join("");
+
+  // preview card
+  const p = Math.max(1, Math.min(99, parseFloat(F("f-p").value)||50))/100;
+  const cat = F("f-cat").value;
+  F("preview").innerHTML = q.length>4 ? `<div class="card">
+      <div class="card-top"><span class="cat">${cat}</span><span class="chip">NEW</span></div>
+      <div class="q">${q}</div>
+      <div class="prob"><span class="p">${Math.round(p*100)}<span style="font-size:.42em">%</span></span><span class="chg muted">OPEN</span></div>
+      <div class="legs">
+        <span class="leg leg--yes"><span class="lbl">TAKE YES</span><span class="val">${PM.fmt.cents(p)}</span></span>
+        <span class="leg leg--no"><span class="lbl">TAKE NO</span><span class="val">${PM.fmt.cents(1-p)}</span></span>
+      </div>
+      <div class="cardmeta"><span>${PM.fmt.usd(liq)} SEED</span><span>${date?PM.fmt.left(new Date(date).toISOString()):"NO DATE"} LEFT</span></div>
+    </div>` : UI.empty();
+
+  return { checks, passed, q, cat, p };
+}
+
+["f-q","f-src","f-yes","f-no","f-date","f-liq","f-p","f-cat"].forEach(id=>{
+  F(id).addEventListener("input", validate);
+  F(id).addEventListener("change", validate);
+});
+validate();
+
+F("submit").onclick = ()=>{
+  const v = validate();
+  if (v.passed < v.checks.length){
+    UI.toast("VALIDATION FAILED // " + (v.checks.length - v.passed) + " ITEMS OPEN");
+    return;
+  }
+  UI.openModal(`<div class="panel-h"><span>SUBMITTED</span><span class="mono acid">8 / 8</span></div>
+    <h3 class="h3" style="margin-bottom:14px">${v.q}</h3>
+    <div class="kv"><span class="k">STATUS</span><span class="acid">QUEUED FOR REVIEW</span></div>
+    <div class="kv"><span class="k">REVIEW WINDOW</span><span>UP TO 24H</span></div>
+    <div class="kv"><span class="k">DEPOSIT</span><span>5,000 $PMARC LOCKED</span></div>
+    <p class="muted" style="font-size:12.5px;line-height:1.65;margin:14px 0 0">Automated validation is the first gate, not the last one. Before a market opens it is checked for manipulable wording, source reliability and whether the creator can influence the outcome. In this build nothing is submitted anywhere.</p>
+    <button class="btn btn--block" style="margin-top:14px" onclick="UI.closeModal()">CLOSE</button>`);
+};
+</script>
+</body>
+</html>

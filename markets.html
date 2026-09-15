@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MARKETS // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:26px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>ALL MARKETS</div>
+  <h1 class="display--sm" style="margin-top:18px">One question.<br>Two outcomes.<br>Infinite information.</h1>
+</div></section>
+
+<div class="ticker" id="ticker"></div>
+
+<section class="sec sec--flush" style="padding-top:28px"><div class="wrap">
+  <div class="filters" id="cats"></div>
+  <div class="filters">
+    <input class="search" id="q" placeholder="Search markets" autocomplete="off">
+    <button data-sort="moving" class="on">MOVING</button>
+    <button data-sort="volume">VOLUME</button>
+    <button data-sort="new">NEW</button>
+    <button data-sort="closing">CLOSING</button>
+    <button data-sort="early">EARLY</button>
+    <button data-sort="contrarian">CONTRARIAN</button>
+  </div>
+  <div id="out"></div>
+  <div class="meta" id="count" style="margin-top:18px"></div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("markets.html"); PM.start(); UI.ticker(document.getElementById("ticker"));
+
+let cat = new URLSearchParams(location.search).get("cat") || "ALL";
+let sort = "moving", term = "";
+
+document.getElementById("cats").innerHTML =
+  ["ALL"].concat(CATEGORIES).map(c=>`<button data-cat="${c}" class="${c===cat?"on":""}">${c}</button>`).join("");
+
+function render(){
+  let list = PM.sorted(sort);
+  if (cat !== "ALL") list = list.filter(m=>m.cat===cat);
+  if (term) list = list.filter(m=>(m.q+" "+m.cat+" "+m.tags.join(" ")).toLowerCase().includes(term));
+  const out = document.getElementById("out");
+  out.innerHTML = list.length ? `<div class="cards">${list.map(UI.card).join("")}</div>`
+    : (term ? UI.empty() : UI.empty("quiet"));
+  document.getElementById("count").textContent = list.length + " MARKETS // SORTED BY " + sort.toUpperCase();
+}
+render(); UI.bindLive();
+
+document.getElementById("cats").onclick = e=>{
+  if(!e.target.dataset.cat) return;
+  cat = e.target.dataset.cat;
+  document.querySelectorAll("#cats button").forEach(b=>b.classList.toggle("on", b.dataset.cat===cat));
+  render();
+};
+document.querySelectorAll("[data-sort]").forEach(b=>b.onclick=()=>{
+  sort=b.dataset.sort;
+  document.querySelectorAll("[data-sort]").forEach(x=>x.classList.toggle("on",x===b));
+  render();
+});
+document.getElementById("q").oninput = e=>{ term = e.target.value.trim().toLowerCase(); render(); };
+</script>
+</body>
+</html>

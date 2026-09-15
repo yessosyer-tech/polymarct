@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE VERDICT ENGINE // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+<style>
+ .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+ @media(max-width:900px){.flow{grid-template-columns:1fr}}
+ .step{background:var(--black);padding:22px;min-height:180px;display:flex;flex-direction:column;gap:10px;position:relative}
+ .step .n{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim)}
+ .step h4{font-size:17px;letter-spacing:-.02em}
+ .step p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.6}
+ .step.on{background:var(--graphite)}
+ .step.on h4{color:var(--acid)}
+</style>
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:26px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>THE VERDICT ENGINE</div>
+  <h1 class="display--sm" style="margin-top:18px">Reality decides.<br>The engine records it.</h1>
+  <p class="lede" style="margin-top:20px">Resolution is the product. Everything upstream is just pricing. The Verdict Engine takes an event, reads a pre committed source, verifies it, resolves the market and settles the positions. The question cannot change after trading opens.</p>
+</div></section>
+
+<section class="sec sec--flush" style="padding-top:22px"><div class="wrap">
+  <div class="flow" id="flow">
+    <div class="step"><span class="n">01</span><h4>EVENT OCCURS</h4><p>The real world does something. The market does not need to be told; the window was fixed at creation.</p></div>
+    <div class="step"><span class="n">02</span><h4>DATA SOURCE</h4><p>The source named in the market is read at the resolution time. One primary, one declared fallback, nothing improvised.</p></div>
+    <div class="step"><span class="n">03</span><h4>VERIFICATION</h4><p>The reading is checked against the criteria, cross read against the fallback, and published with the raw value attached.</p></div>
+    <div class="step"><span class="n">04</span><h4>RESOLUTION</h4><p>The verdict is written on chain with its evidence. A dispute window opens before anything settles.</p></div>
+    <div class="step"><span class="n">05</span><h4>SETTLEMENT</h4><p>Winning positions settle in USDC on Arc. Deterministic finality means settled is settled.</p></div>
+  </div>
+</div></section>
+
+<section class="sec" id="dispute"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">CONTESTED OUTCOMES</div><h2 class="h2">When reality is argued about.</h2></div></div>
+  <div class="cols cols--2">
+    <div class="panel"><div class="panel-h">DISPUTE WINDOW</div><p style="margin:0;font-size:14px;line-height:1.65">24 hours between verdict and settlement. Any holder of a position in the market can post a dispute bond and cite the specific criterion they believe was misread.</p></div>
+    <div class="panel"><div class="panel-h">REVIEW</div><p style="margin:0;font-size:14px;line-height:1.65">A disputed market goes to review against the original wording only. Not against what people think should have happened, not against a better question someone wishes had been asked.</p></div>
+    <div class="panel"><div class="panel-h">FINAL VERDICT</div><p style="margin:0;font-size:14px;line-height:1.65">The final verdict is published with the evidence and the reasoning. A successful dispute returns the bond and corrects the resolution. A failed dispute forfeits it.</p></div>
+    <div class="panel"><div class="panel-h">UNRESOLVABLE</div><p style="margin:0;font-size:14px;line-height:1.65">If the source is discontinued and the fallback cannot answer, the market voids and positions are returned at cost. A wrong verdict is worse than no verdict.</p></div>
+  </div>
+</div></section>
+
+<section class="sec" id="rules"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">TRUST</div><h2 class="h2">Rules are visible.<br>Outcomes are defined.<br>Settlement is deterministic.</h2></div></div>
+  <div class="statgrid">
+    <div class="stat"><div class="k">RESOLUTION SOURCE</div><div class="v" style="font-size:19px">PRE COMMITTED</div><div class="d">named before trading opens</div></div>
+    <div class="stat"><div class="k">RESOLUTION TIME</div><div class="v" style="font-size:19px">FIXED</div><div class="d">set at creation, cannot move</div></div>
+    <div class="stat"><div class="k">CRITERIA</div><div class="v" style="font-size:19px">IMMUTABLE</div><div class="d">the question cannot change after trading</div></div>
+    <div class="stat"><div class="k">DISPUTE</div><div class="v" style="font-size:19px">BONDED</div><div class="d">open to any position holder</div></div>
+    <div class="stat"><div class="k">SETTLEMENT</div><div class="v" style="font-size:19px">USDC ON ARC</div><div class="d">deterministic finality</div></div>
+    <div class="stat"><div class="k">EVIDENCE</div><div class="v" style="font-size:19px">PUBLISHED</div><div class="d">raw reading attached to the verdict</div></div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="oracle">
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+      <circle cx="48" cy="48" r="34" stroke="var(--line-strong)"/>
+      <circle cx="48" cy="48" r="22" stroke="var(--acid)" stroke-dasharray="4 6">
+        <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="24s" repeatCount="indefinite"/>
+      </circle>
+      <path d="M48 14V82M14 48H82" stroke="var(--line)"/>
+      <circle cx="48" cy="48" r="5" fill="var(--acid)"/>
+    </svg>
+    <div>
+      <div class="meta" style="margin-bottom:10px">THE ORACLE</div>
+      <p class="h3" style="margin:0 0 8px">The oracle has spoken.</p>
+      <p class="muted" style="margin:0;font-size:13.5px;max-width:60ch">Used sparingly, and never as a mascot. When a market resolves the verdict is stated plainly, with the reading that produced it. When a market is genuinely undecided the honest output is 51 / 49, and the honest thing to say is that the oracle is confused.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec" id="risk"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">RISK AND ELIGIBILITY</div><h2 class="h2">The design is aggressive.<br>The claims are not.</h2></div></div>
+  <div class="cols cols--2">
+    <div class="panel"><div class="panel-h">RISK</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.7">Outcome positions can go to zero. You can lose the entire amount committed to a position. Probabilities shown are the market's price, not a forecast produced or endorsed by Polymarct, and a market being confident is not evidence that it is correct.</p></div>
+    <div class="panel"><div class="panel-h">ELIGIBILITY</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.7">Prediction markets can engage gambling, derivatives, securities and financial promotion regimes depending on jurisdiction and market type. Access is subject to jurisdiction gating, age restriction, and identity checks where required. Some categories are restricted or unavailable in some jurisdictions.</p></div>
+    <div class="panel"><div class="panel-h">$PMARC</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.7">$PMARC is an ecosystem asset, not an investment product, not a security offering, and not a claim on platform revenue. No return is promised or implied. Nothing on this site is investment advice.</p></div>
+    <div class="panel"><div class="panel-h">THIS BUILD</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.7">Every number in this build is demonstration data generated in the browser. No wallet is connected, no order is routed, no market resolves and no funds move. A real money launch requires the contract layer, the oracle layer and a compliance review before anything goes live.</p></div>
+  </div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("verdict.html");
+const steps = [...document.querySelectorAll(".step")];
+let i = 0;
+setInterval(()=>{ steps.forEach((s,j)=>s.classList.toggle("on", j===i%steps.length)); i++; }, 1800);
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DISCOVER // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+<style>.feedrow{display:grid;grid-template-columns:200px minmax(0,1fr);gap:clamp(16px,3vw,40px);padding-block:clamp(28px,4vw,48px);border-top:1px solid var(--line)}
+@media(max-width:900px){.feedrow{grid-template-columns:1fr;gap:16px}}</style>
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:24px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>DISCOVER</div>
+  <h1 class="display--sm" style="margin-top:18px">Something is<br>always happening.</h1>
+  <p class="lede" style="margin-top:20px">The feed is not a timeline of opinions. It is a timeline of prices changing their mind.</p>
+</div></section>
+
+<div class="ticker" id="ticker"></div>
+
+<div class="wrap">
+  <div class="feedrow"><div><div class="meta acid">&#9679; MOVING NOW</div><p class="muted" style="font-size:12.5px;margin-top:10px">Largest absolute probability change in 24 hours.</p></div><div class="cards" id="moving"></div></div>
+  <div class="feedrow"><div><div class="meta">EARLY SIGNALS</div><p class="muted" style="font-size:12.5px;margin-top:10px">Thin volume, thickening activity, probability already moving. You are early. The market is not.</p></div><div id="early"></div></div>
+  <div class="feedrow"><div><div class="meta">WHALE ACTIVITY</div><p class="muted" style="font-size:12.5px;margin-top:10px">Single fills large enough to move the book.</p></div><div class="stream" id="whale"></div></div>
+  <div class="feedrow"><div><div class="meta">BREAKING</div><p class="muted" style="font-size:12.5px;margin-top:10px">Information events detected inside the flow.</p></div><div class="stream" id="breaking"></div></div>
+  <div class="feedrow"><div><div class="meta">AGAINST THE CROWD</div><p class="muted" style="font-size:12.5px;margin-top:10px">The crowd is confident. Someone disagrees.</p></div><div id="contra"></div></div>
+  <div class="feedrow"><div><div class="meta">NEW</div><p class="muted" style="font-size:12.5px;margin-top:10px">Freshly opened books.</p></div><div class="cards" id="new"></div></div>
+  <div class="feedrow"><div><div class="meta">WHAT THE WORLD THINKS</div><p class="muted" style="font-size:12.5px;margin-top:10px">Markets aggregated into themes.</p></div><div class="statgrid" id="themes"></div></div>
+</div>
+
+<section class="sec" style="margin-top:20px"><div class="wrap center">
+  <p class="big-quote">You think you know.<br>The market disagrees.</p>
+  <a class="btn btn--primary" style="margin-top:26px" href="markets.html">EXPLORE MARKETS &rarr;</a>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("discover.html"); PM.start(); UI.ticker(document.getElementById("ticker"));
+
+document.getElementById("moving").innerHTML = PM.sorted("moving").slice(0,4).map(UI.card).join("");
+document.getElementById("new").innerHTML = PM.sorted("new").slice(0,4).map(UI.card).join("");
+
+const early = PM.sorted("early");
+document.getElementById("early").innerHTML = early.length
+  ? `<div class="cards">${early.slice(0,4).map(UI.card).join("")}</div>` : UI.empty("quiet");
+
+const contra = PM.sorted("contrarian");
+document.getElementById("contra").innerHTML = contra.length
+  ? `<div class="cards">${contra.slice(0,4).map(UI.card).join("")}</div>` : UI.empty("quiet");
+
+function row(e){
+  const m = PM.get(e.market);
+  const tone = e.tone==="acid"?"acid":e.tone==="blue"?"blue":e.tone==="no"?"down":"muted";
+  return `<a class="ev" href="market.html?m=${e.market}">
+    <span class="t">${PM.fmt.ago(e.ts)}</span><span class="kind ${tone}">${e.kind}</span>
+    <span class="txt">${m.q}</span><span class="val ${tone}">${e.val}</span></a>`;
+}
+function paint(){
+  const w = PM.state.events.filter(e=>e.kind==="LARGE TRADE").slice(0,5);
+  const b = PM.state.events.filter(e=>e.kind==="PROBABILITY"||e.kind==="CONSENSUS").slice(0,5);
+  document.getElementById("whale").innerHTML = w.length?w.map(row).join(""):UI.empty("quiet");
+  document.getElementById("breaking").innerHTML = b.length?b.map(row).join(""):UI.empty("quiet");
+}
+paint(); setInterval(paint, 3000);
+
+document.getElementById("themes").innerHTML = PM.themeReads().map(t=>{
+  const tone = t.read==="Bullish"?"acid":t.read==="Bearish"?"down":"muted";
+  return `<div class="stat"><div class="k">${t.name}</div>
+    <div class="v ${tone}">${t.read}</div>
+    <div class="d">${Math.round(t.value*100)}% across ${t.n} markets</div></div>`;
+}).join("");
+
+UI.bindLive();
+</script>
+</body>
+</html>

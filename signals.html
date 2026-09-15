@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE SIGNAL // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:24px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>THE SIGNAL // LIVE</div>
+  <h1 class="display--sm" style="margin-top:18px">Watch the probability.<br>Then watch it break.</h1>
+  <p class="lede" style="margin-top:20px">A continuously updating stream of markets where something unusual is happening. Probability shifts, volume spikes, new makers, large trades, consensus reversals.</p>
+</div></section>
+
+<div class="ticker" id="ticker"></div>
+
+<section class="sec sec--flush" style="padding-top:30px"><div class="wrap">
+  <div class="statgrid" id="pulse" style="margin-bottom:28px"></div>
+  <div class="filters" id="kinds"></div>
+  <div class="stream" id="stream"></div>
+  <p class="meta" style="margin-top:16px" id="meta"></p>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">TOP OF THE SIGNAL</div><h2 class="h2">Where the information is.</h2></div></div>
+  <div class="cards" id="top"></div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("signals.html"); PM.start(); UI.ticker(document.getElementById("ticker"));
+
+const KINDS = ["ALL","PROBABILITY","LARGE TRADE","VOLUME SPIKE","LIQUIDITY","CONSENSUS","MARKET MAKER"];
+let kind = "ALL";
+document.getElementById("kinds").innerHTML = KINDS.map(k=>`<button data-k="${k}" class="${k===kind?"on":""}">${k}</button>`).join("");
+document.getElementById("kinds").onclick = e=>{
+  if(!e.target.dataset.k) return;
+  kind = e.target.dataset.k;
+  document.querySelectorAll("#kinds button").forEach(b=>b.classList.toggle("on", b.dataset.k===kind));
+  paint();
+};
+
+function paint(){
+  const evs = PM.state.events.filter(e=>kind==="ALL"||e.kind===kind).slice(0,40);
+  const el = document.getElementById("stream");
+  if(!evs.length){ el.innerHTML = UI.empty("quiet"); document.getElementById("meta").textContent=""; return; }
+  el.innerHTML = evs.map(e=>{
+    const m = PM.get(e.market);
+    const tone = e.tone==="acid"?"acid":e.tone==="blue"?"blue":e.tone==="no"?"down":"muted";
+    return `<a class="ev" href="market.html?m=${e.market}">
+      <span class="t">${PM.fmt.ago(e.ts)}</span>
+      <span class="kind ${tone}">${e.kind}</span>
+      <span class="txt">${m.q}</span>
+      <span class="val ${tone}">${e.val}</span></a>`;
+  }).join("");
+  document.getElementById("meta").textContent = evs.length + " EVENTS // " + kind;
+}
+
+function pulse(){
+  const ev = PM.state.events;
+  const last1h = ev.filter(e=>Date.now()-e.ts < 36e5);
+  const big = ev.filter(e=>e.kind==="LARGE TRADE").length;
+  const rev = ev.filter(e=>e.kind==="CONSENSUS").length;
+  const moving = PM.sorted("moving")[0];
+  document.getElementById("pulse").innerHTML = `
+    <div class="stat"><div class="k">EVENTS / 1H</div><div class="v num">${last1h.length}</div><div class="d">across ${PM.state.markets.length} markets</div></div>
+    <div class="stat"><div class="k">LARGE TRADES</div><div class="v num">${big}</div><div class="d">single fills over $2K</div></div>
+    <div class="stat"><div class="k">CONSENSUS REVERSALS</div><div class="v num">${rev}</div><div class="d">side flips detected</div></div>
+    <div class="stat"><div class="k">BIGGEST MOVE</div><div class="v num ${moving.d24>=0?"up":"down"}">${PM.fmt.signed(moving.d24)}</div><div class="d">${moving.cat}</div></div>`;
+}
+
+document.getElementById("top").innerHTML = PM.sorted("signal").slice(0,8).map(UI.card).join("");
+paint(); pulse(); UI.bindLive();
+setInterval(()=>{ paint(); pulse(); }, 2500);
+</script>
+</body>
+</html>

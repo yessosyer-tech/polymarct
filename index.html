@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>POLYMARCT // The leading prediction market on Arc</title>
+<meta name="description" content="Polymarct is the leading prediction market on Arc. Trade probabilities, follow the signal, price the future.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+</head>
+<body>
+
+<section class="hero">
+  <canvas id="field"></canvas>
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow"><span class="dot"></span>ARC // MARKET 001 // LIVE</div>
+        <h1 class="display" style="margin-top:22px">The future<br>has a price.</h1>
+        <p class="lede" style="margin-top:22px">Trade on what happens next. Everyone has an opinion. Only the market has a price.</p>
+        <div class="hero-sub">
+          <a class="btn btn--primary" href="markets.html">EXPLORE MARKETS &rarr;</a>
+          <a class="btn" href="create.html">CREATE A MARKET</a>
+        </div>
+      </div>
+      <div class="readout" id="readout">
+        <div class="q" id="ro-q">BTC &gt; $125K BY OCT 31</div>
+        <div class="big"><span id="ro-c">63&cent;</span><small>YES</small></div>
+        <div class="bar"><i id="ro-bar" style="width:63%"></i></div>
+        <div class="legs2"><span id="ro-yes">YES 63&cent;</span><span id="ro-no">NO 37&cent;</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker" id="ticker"></div>
+
+<!-- LIVE RIGHT NOW -->
+<section class="sec sec--flush"><div class="wrap">
+  <div class="sec-head">
+    <div><div class="idx">01 / LIVE RIGHT NOW</div><h2 class="h2">The crowd is never still.</h2></div>
+    <div class="row" style="gap:10px"><span class="sub">Markets ranked by what is actually moving.</span><a class="btn btn--sm" href="markets.html">ALL MARKETS</a></div>
+  </div>
+  <div class="cards" id="live"></div>
+</div></section>
+
+<!-- THE SIGNAL -->
+<section class="sec"><div class="wrap">
+  <div class="sec-head">
+    <div><div class="idx">02 / THE SIGNAL</div><h2 class="h2">Something just moved.</h2></div>
+    <div class="row" style="gap:10px"><span class="sub">Unusual activity across the market, as it happens.</span><a class="btn btn--sm" href="signals.html">OPEN THE SIGNAL</a></div>
+  </div>
+  <div class="stream" id="signal"></div>
+</div></section>
+
+<!-- AGAINST THE CROWD -->
+<section class="sec"><div class="wrap">
+  <div class="sec-head">
+    <div><div class="idx">03 / AGAINST THE CROWD</div><h2 class="h2">The crowd is confident.<br>Someone disagrees.</h2></div>
+    <span class="sub">Lopsided markets where money is arriving on the unloved side.</span>
+  </div>
+  <div class="cards" id="contra"></div>
+</div></section>
+
+<!-- ARC LIVE -->
+<section class="sec"><div class="wrap">
+  <div class="sec-head">
+    <div><div class="idx">04 / ARC // LIVE</div><h2 class="h2">The information layer of Arc.</h2></div>
+    <div class="row" style="gap:10px"><span class="sub">Stablecoin native, deterministic settlement, fees priced in USDC.</span><a class="btn btn--sm" href="arc.html">OPEN ARC // LIVE</a></div>
+  </div>
+  <div class="statgrid" id="arcstats" style="margin-bottom:24px"></div>
+  <div class="cards" id="arcmarkets"></div>
+</div></section>
+
+<!-- FUTURE INDEX -->
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">05 / THE FUTURE INDEX&trade;</div><h2 class="h2">What the market expects.</h2></div>
+  <span class="sub">A visual information metric across a fixed basket of ten markets. Not an investment product.</span></div>
+  <div class="cols cols--side">
+    <div class="panel" style="padding:clamp(20px,3vw,34px)">
+      <div class="row row--between" style="align-items:flex-end;flex-wrap:wrap;gap:20px">
+        <div>
+          <div class="meta" style="margin-bottom:12px">FUTURE INDEX</div>
+          <div style="display:flex;align-items:baseline;gap:16px">
+            <span id="fi-v" class="num" style="font-size:clamp(60px,10vw,132px);font-weight:600;letter-spacing:-.06em;line-height:.82">72.4</span>
+            <span id="fi-d" class="num up" style="font-size:clamp(14px,1.6vw,20px)">+4.7%</span>
+          </div>
+        </div>
+        <div class="meta" id="fi-read" style="max-width:34ch;line-height:1.7;text-transform:none;letter-spacing:.02em;font-size:12px"></div>
+      </div>
+      <div id="fi-chart" style="margin-top:26px"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><span>WHAT THE WORLD THINKS</span><span class="mono">AGGREGATE</span></div>
+      <div id="themes"></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- DAILY BRIEF -->
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">06 / THE DAILY BRIEF</div><h2 class="h2">The market has spoken.</h2></div>
+  <span class="sub">Every day: what moved, what reversed, and what nobody is watching.</span></div>
+  <div class="cols cols--2" id="brief"></div>
+</div></section>
+
+<!-- PMARC -->
+<section class="sec"><div class="wrap">
+  <div class="cols cols--side" style="align-items:center">
+    <div>
+      <div class="idx meta" style="margin-bottom:14px">07 / $PMARC</div>
+      <h2 class="display--sm" style="text-transform:uppercase">Product first.<br>Token second.</h2>
+      <p class="lede" style="margin-top:20px">$PMARC is the ecosystem asset behind Polymarct. It exists to route market creation, liquidity and governance, not to be the reason you are here. No promised yield, no guaranteed appreciation, no pie chart circus.</p>
+      <a class="btn" style="margin-top:22px" href="token.html">VIEW THE ASSET &rarr;</a>
+    </div>
+    <div class="panel center" style="padding:36px 20px">
+      <div id="pmglyph"></div>
+      <div class="meta" style="justify-content:center;margin-top:18px">$PMARC // ARC</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- CTA -->
+<section class="sec"><div class="wrap center">
+  <p class="big-quote">The headline comes later.<br>The price moves first.</p>
+  <div class="row" style="justify-content:center;margin-top:30px;flex-wrap:wrap">
+    <a class="btn btn--primary" href="markets.html">ENTER MARKET &rarr;</a>
+    <a class="btn" href="discover.html">DISCOVER</a>
+  </div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/field.js"></script>
+<script>
+UI.mount("index.html");
+PM.start();
+
+/* ---- hero readout cycles through live movers ---- */
+(function(){
+  const pool = PM.sorted("moving").slice(0,8);
+  let i = 0;
+  function paint(){
+    const m = pool[i % pool.length];
+    const c = Math.round(m.yes*100);
+    document.getElementById("ro-q").textContent = m.q.toUpperCase().replace(/\?$/,"");
+    document.getElementById("ro-c").innerHTML = c + "&cent;";
+    document.getElementById("ro-bar").style.width = c + "%";
+    document.getElementById("ro-yes").innerHTML = "YES " + c + "&cent;";
+    document.getElementById("ro-no").innerHTML = "NO " + (100-c) + "&cent;";
+  }
+  paint();
+  setInterval(()=>{ i++; paint(); }, 5200);
+  PM.subscribe(()=>{ const m = pool[i % pool.length]; const c = Math.round(m.yes*100);
+    document.getElementById("ro-c").innerHTML = c + "&cent;";
+    document.getElementById("ro-bar").style.width = c + "%";
+    document.getElementById("ro-yes").innerHTML = "YES " + c + "&cent;";
+    document.getElementById("ro-no").innerHTML = "NO " + (100-c) + "&cent;";
+  });
+})();
+
+UI.ticker(document.getElementById("ticker"));
+document.getElementById("live").innerHTML = PM.sorted("moving").slice(0,8).map(UI.card).join("");
+document.getElementById("contra").innerHTML = PM.sorted("contrarian").slice(0,4).map(UI.card).join("");
+document.getElementById("arcmarkets").innerHTML = PM.state.markets.filter(m=>m.cat==="ARC").slice(0,4).map(UI.card).join("");
+UI.bindLive();
+
+/* arc stats */
+document.getElementById("arcstats").innerHTML = ARC_NETWORK.map(s=>
+  `<div class="stat"><div class="k">${s.k}</div><div class="v num">${s.v}</div><div class="d ${s.up?"up":"down"}">${s.d}</div></div>`).join("");
+
+/* signal preview */
+function paintSignal(){
+  document.getElementById("signal").innerHTML = PM.state.events.slice(0,7).map(e=>{
+    const m = PM.get(e.market);
+    const tone = e.tone==="acid"?"acid":e.tone==="blue"?"blue":e.tone==="no"?"down":"muted";
+    return `<a class="ev" href="market.html?m=${e.market}">
+      <span class="t">${PM.fmt.ago(e.ts)}</span>
+      <span class="kind ${tone}">${e.kind}</span>
+      <span class="txt">${m.q}</span>
+      <span class="val ${tone}">${e.val}</span></a>`;
+  }).join("");
+}
+paintSignal(); setInterval(paintSignal, 3000);
+
+/* future index */
+const fiHist = [];
+function paintIndex(){
+  const fi = PM.futureIndex();
+  fiHist.push(fi.value); if (fiHist.length>96) fiHist.shift();
+  document.getElementById("fi-v").textContent = fi.value.toFixed(1);
+  const d = document.getElementById("fi-d");
+  d.textContent = (fi.delta>=0?"+":"") + fi.delta.toFixed(1) + "%";
+  d.className = "num " + (fi.delta>=0?"up":"down");
+  const dir = fi.delta>=0 ? "increasing" : "cooling";
+  document.getElementById("fi-read").textContent =
+    "Market confidence is " + dir + " across crypto, technology and macro markets. Ten markets, equally weighted, recalculated every tick.";
+  document.getElementById("fi-chart").innerHTML =
+    fiHist.length>2 ? UI.spark(fiHist.map(v=>v/100), 800, 150, "var(--acid)") : "";
+}
+paintIndex(); PM.subscribe(paintIndex);
+
+/* themes */
+document.getElementById("themes").innerHTML = PM.themeReads().map(t=>{
+  const tone = t.read==="Bullish"?"acid":t.read==="Bearish"?"down":"muted";
+  return `<div style="padding:11px 0;border-bottom:1px solid var(--line)">
+    <div class="row row--between"><span class="meta" style="color:var(--white)">${t.name}</span>
+    <span class="mono ${tone}" style="font-size:12px">${t.read} ${Math.round(t.value*100)}%</span></div>
+    <div style="height:2px;background:var(--surface-2);margin-top:8px"><i style="display:block;height:2px;width:${Math.round(t.value*100)}%;background:${t.read==="Bearish"?"var(--no)":"var(--acid)"}"></i></div>
+  </div>`;
+}).join("");
+
+/* daily brief */
+(function(){
+  const moving = PM.sorted("moving").slice(0,3);
+  const rev = PM.sorted("contrarian").slice(0,2);
+  const quiet = PM.state.markets.slice().sort((a,b)=>a.vol-b.vol)[0];
+  const blk = (title, sub, list) => `<div class="panel">
+    <div class="panel-h"><span>${title}</span><span class="mono">${list.length}</span></div>
+    <p class="muted" style="font-size:12.5px;margin:0 0 12px">${sub}</p>
+    ${list.map(m=>`<a class="kv" href="market.html?m=${m.id}" style="text-decoration:none">
+      <span style="max-width:60%;font-family:var(--sans);font-size:13.5px">${m.q}</span>
+      <span>${Math.round(m.yes*100)}% <span class="${m.d24>=0?"up":"down"}">${PM.fmt.signed(m.d24)}</span></span></a>`).join("")}</div>`;
+  document.getElementById("brief").innerHTML =
+    blk("3 MARKETS MOVING TODAY","Largest absolute probability change in the last 24 hours.",moving) +
+    blk("2 CONSENSUS REVERSALS","Confident markets taking flow against the consensus side.",rev) +
+    blk("1 MARKET NOBODY IS WATCHING","Thinnest book on the board. Information value is highest where attention is lowest.",[quiet]);
+})();
+
+/* PM glyph, built from probability lines */
+document.getElementById("pmglyph").innerHTML = `
+<svg viewBox="0 0 220 120" style="width:100%;max-width:300px" fill="none" aria-label="PMARC mark">
+  <path d="M8 96A102 102 0 0 1 212 96" stroke="var(--acid)" stroke-width="2"/>
+  <g stroke="var(--white)" stroke-width="3">
+    <path d="M30 110V70"><animate attributeName="d" dur="6s" repeatCount="indefinite" values="M30 110V70;M30 110V56;M30 110V70"/></path>
+    <path d="M56 110V44"><animate attributeName="d" dur="7s" repeatCount="indefinite" values="M56 110V44;M56 110V62;M56 110V44"/></path>
+    <path d="M82 110V58"><animate attributeName="d" dur="5.5s" repeatCount="indefinite" values="M82 110V58;M82 110V36;M82 110V58"/></path>
+    <path d="M108 110V30"><animate attributeName="d" dur="8s" repeatCount="indefinite" values="M108 110V30;M108 110V48;M108 110V30"/></path>
+    <path d="M134 110V52"><animate attributeName="d" dur="6.5s" repeatCount="indefinite" values="M134 110V52;M134 110V34;M134 110V52"/></path>
+    <path d="M160 110V66"><animate attributeName="d" dur="7.5s" repeatCount="indefinite" values="M160 110V66;M160 110V50;M160 110V66"/></path>
+    <path d="M186 110V78"><animate attributeName="d" dur="6.2s" repeatCount="indefinite" values="M186 110V78;M186 110V64;M186 110V78"/></path>
+  </g>
+</svg>`;
+</script>
+</body>
+</html>

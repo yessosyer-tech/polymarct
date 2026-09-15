@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARC // LIVE // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:26px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>ARC // LIVE</div>
+  <h1 class="display--sm" style="margin-top:18px">The information<br>layer of Arc.</h1>
+  <p class="lede" style="margin-top:20px">Arc settles in stablecoins with predictable USDC denominated fees and fast deterministic finality. That is what a prediction market actually needs: a fixed unit of account, cheap frequent price updates, and a settlement guarantee that does not move after the verdict.</p>
+  <div class="row" style="margin-top:24px;flex-wrap:wrap">
+    <a class="btn btn--primary" href="markets.html?cat=ARC">ARC MARKETS &rarr;</a>
+    <a class="btn" href="create.html">CREATE AN ARC MARKET</a>
+  </div>
+</div></section>
+
+<div class="ticker" id="ticker"></div>
+
+<section class="sec sec--flush" style="padding-top:34px"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">01 / NETWORK</div><h2 class="h2">The chain, live.</h2></div>
+  <span class="sub">Demonstration telemetry. Production reads the Arc explorer and DefiLlama directly.</span></div>
+  <div class="statgrid" id="net"></div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">02 / PROTOCOLS</div><h2 class="h2">Ranked by what they hold.</h2></div>
+  <div class="filters" style="margin:0" id="sorts">
+    <button data-k="tvl" class="on">TVL</button><button data-k="vol">VOLUME</button><button data-k="users">USERS</button><button data-k="g">GROWTH</button>
+  </div></div>
+  <div class="tblwrap"><table class="tbl" id="protos"></table></div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="sec-head"><div><div class="idx">03 / MARKETS</div><h2 class="h2">Predictions about the ecosystem itself.</h2></div>
+  <span class="sub">A direct feedback loop between Polymarct and Arc: the ecosystem produces the questions, the market prices them.</span></div>
+  <div class="cards" id="arcm"></div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="cols cols--2">
+    <div class="panel"><div class="panel-h">WHY ARC</div>
+      <div class="kv"><span class="k">UNIT OF ACCOUNT</span><span>USDC</span></div>
+      <div class="kv"><span class="k">FEE PREDICTABILITY</span><span>STABLE, SUB CENT</span></div>
+      <div class="kv"><span class="k">FINALITY</span><span>FAST, DETERMINISTIC</span></div>
+      <div class="kv"><span class="k">SETTLEMENT</span><span>NATIVE STABLECOIN</span></div>
+      <p class="muted" style="font-size:13px;line-height:1.65;margin:16px 0 0">A market that reprices hundreds of times a day cannot pay volatile gas in a volatile asset. Arc removes both variables, which is why prediction markets appear in its own design materials as a first class use case.</p>
+    </div>
+    <div class="panel"><div class="panel-h">POSITIONING</div>
+      <p style="font-size:clamp(20px,2.4vw,30px);letter-spacing:-.03em;line-height:1.12;margin:0 0 16px">Built for Arc.<br>Built for markets.</p>
+      <p class="muted" style="font-size:13px;line-height:1.65;margin:0">Polymarct is native to Arc rather than ported onto it. The Arc category is not a marketing shelf, it is the feedback loop: every protocol milestone, supply threshold and network target becomes a priced question, and the price becomes the ecosystem's shared expectation.</p>
+    </div>
+  </div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+UI.mount("arc.html"); PM.start(); UI.ticker(document.getElementById("ticker"));
+
+document.getElementById("net").innerHTML = ARC_NETWORK.map(s=>
+  `<div class="stat"><div class="k">${s.k}</div><div class="v num">${s.v}</div><div class="d ${s.up?"up":"down"}">${s.d}</div></div>`).join("");
+
+let key = "tvl";
+function protos(){
+  const rows = ARC_PROTOCOLS.slice().sort((a,b)=>b[key]-a[key]).map((p,i)=>
+    `<tr><td class="mono muted">${String(i+1).padStart(2,"0")}</td>
+      <td><b>${p.n}</b></td><td class="mono muted">${p.t}</td>
+      <td class="r mono">${PM.fmt.usd(p.tvl)}</td>
+      <td class="r mono">${PM.fmt.usd(p.vol)}</td>
+      <td class="r mono">${PM.fmt.n(p.users)}</td>
+      <td class="r mono ${p.g>=0?"up":"down"}">${PM.fmt.signed(p.g)}</td></tr>`).join("");
+  document.getElementById("protos").innerHTML =
+    `<thead><tr><th></th><th>PROTOCOL</th><th>TYPE</th><th class="r">TVL</th><th class="r">VOLUME 24H</th><th class="r">USERS</th><th class="r">GROWTH 7D</th></tr></thead><tbody>${rows}</tbody>`;
+}
+protos();
+document.getElementById("sorts").onclick = e=>{
+  if(!e.target.dataset.k) return;
+  key = e.target.dataset.k;
+  document.querySelectorAll("#sorts button").forEach(b=>b.classList.toggle("on", b.dataset.k===key));
+  protos();
+};
+
+document.getElementById("arcm").innerHTML = PM.state.markets.filter(m=>m.cat==="ARC").map(UI.card).join("");
+UI.bindLive();
+</script>
+</body>
+</html>

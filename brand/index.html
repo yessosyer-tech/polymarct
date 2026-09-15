@@ -36,7 +36,7 @@
 
 <section class="sec"><div class="wrap">
   <div class="sec-head"><div><div class="idx">01 / THE MARK</div><h2 class="h2">The split unit.</h2></div>
-  <span class="sub">Pure geometry, no type inside the mark, no effects. Reads at 16px as an asymmetric split and at poster size as a price path.</span></div>
+  <span class="sub">Pure geometry, no type inside the mark, no effects. Acid is reserved for the price line, never the mass: it is the only saturated colour in the identity and it marks the one thing the product sells.</span></div>
 
   <div class="cols cols--side" style="margin-bottom:1px">
     <div class="constr">
@@ -45,17 +45,17 @@
     <div class="panel">
       <div class="panel-h">CONSTRUCTION</div>
       <div class="kv"><span class="k">FRAME</span><span>52 / 64 UNITS</span></div>
-      <div class="kv"><span class="k">EDGE</span><span>4 STEPS, MITRED</span></div>
-      <div class="kv"><span class="k">YES MASS</span><span class="acid">ACID FILL</span></div>
-      <div class="kv"><span class="k">NO VOID</span><span>3 TERMINAL HAIRLINES</span></div>
-      <div class="kv"><span class="k">LAST PRINT</span><span>6 UNIT SQUARE</span></div>
+      <div class="kv"><span class="k">PRICE EDGE</span><span class="acid">4 STEPS, MITRED, ACID</span></div>
+      <div class="kv"><span class="k">YES MASS</span><span>WARM WHITE FILL</span></div>
+      <div class="kv"><span class="k">NO VOID</span><span>4 BID HAIRLINES</span></div>
+      <div class="kv"><span class="k">LAST PRINT</span><span>8 UNIT SQUARE, ON THE EDGE</span></div>
       <div class="kv"><span class="k">CLEAR SPACE</span><span>1 BAR HEIGHT</span></div>
       <div class="kv"><span class="k">MINIMUM</span><span>16 PX</span></div>
     </div>
   </div>
 
   <div class="grid3">
-    <div class="cell"><img src="logo/mark.svg" alt="Primary mark"><span class="meta">PRIMARY // ACID ON GRAPHITE</span></div>
+    <div class="cell"><img src="logo/mark.svg" alt="Primary mark"><span class="meta">PRIMARY // WHITE MASS, ACID PRICE</span></div>
     <div class="cell warm"><img src="logo/mark-on-warm.svg" alt="Mark on warm white"><span class="meta" style="color:#5C6166">WARM WHITE GROUND</span></div>
     <div class="cell"><img src="logo/mark-mono-white.svg" alt="Mono white"><span class="meta">MONO // ONE COLOUR</span></div>
     <div class="cell"><img src="logo/mark-outline.svg" alt="Outline"><span class="meta">OUTLINE // ENGRAVING, STITCH</span></div>
@@ -66,12 +66,25 @@
     <div class="cell warm"><img src="logo/lockup-light.svg" alt="Lockup light" style="max-width:520px"><span class="meta" style="color:#5C6166">HORIZONTAL LOCKUP // LIGHT</span></div>
   </div>
 
-  <p class="meta" style="margin-top:18px">DO NOT: RECOLOUR THE YES MASS // ROTATE THE MARK // ADD A GRADIENT OR GLOW IN PRINT // STRETCH THE FRAME // PLACE TYPE INSIDE THE SQUARE</p>
+  <p class="meta" style="margin-top:18px">DO NOT: FILL THE MASS WITH ACID // ROTATE THE MARK // ADD A GRADIENT OR GLOW IN PRINT // STRETCH THE FRAME // PLACE TYPE INSIDE THE SQUARE</p>
 </div></section>
 
 <section class="sec"><div class="wrap">
   <div class="sec-head"><div><div class="idx">02 / THE FILMS</div><h2 class="h2">Motion carries information.</h2></div>
-  <span class="sub">Three pieces, authored at 1920&times;1080 on a deterministic timeline. Press play, or open one full screen and screen record it: every run is frame identical.</span></div>
+  <span class="sub">Four pieces at 1920&times;1080. The trailer runs on its own clock with a synthesised score; the three product films run on a deterministic timeline, so every capture is frame identical.</span></div>
+
+  <div class="film" style="margin-bottom:28px;border-color:var(--line-strong)">
+    <iframe src="motion/00-trailer.html?rec=1" title="Trailer" loading="lazy"></iframe>
+    <div class="cap">
+      <div><div class="h3">00 // TRAILER <span class="chip chip--acid" style="margin-left:10px">SOUND</span></div>
+        <div class="meta" style="margin-top:6px">30S // 60 CUTS // SYNTHESISED SCORE // VOICE-OVER</div></div>
+      <div class="row" style="gap:8px">
+        <a class="btn btn--sm btn--primary" href="motion/00-trailer.html" target="_blank">PLAY WITH SOUND</a>
+        <a class="btn btn--sm" href="motion/00-trailer.html?rec=1" target="_blank">CLEAN</a>
+        <a class="btn btn--sm" href="motion/TRAILER-VO.md" target="_blank">VO SCRIPT</a>
+      </div>
+    </div>
+  </div>
 
   <div class="cols" style="gap:28px">
     <div class="film">
@@ -103,6 +116,8 @@
     <div class="kv"><span class="k">SEEK</span><span>ADD &amp;t=6 TO START AT 6 SECONDS</span></div>
     <div class="kv"><span class="k">KEYS</span><span>SPACE PLAY // R RESTART // H HIDE // , . STEP</span></div>
     <div class="kv"><span class="k">RECORD</span><span>FULL SCREEN AT 1920&times;1080, ANY SCREEN RECORDER</span></div>
+    <div class="kv"><span class="k">TRAILER SOUND</span><span>NEEDS ONE CLICK TO START // M MUTE // V VOICE OFF</span></div>
+    <div class="kv"><span class="k">REAL VOICE-OVER</span><span>DROP A FILE AT motion/audio/vo.mp3 AND IT TAKES OVER</span></div>
   </div>
 </div></section>
 

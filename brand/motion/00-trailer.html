@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRAILER // POLYMARCT</title>
+<link rel="icon" href="../../assets/mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="motion.css">
+<style>
+  #gate{position:fixed;inset:0;z-index:200;background:#000;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:26px;cursor:pointer}
+  #gate .big{font-size:clamp(40px,7vw,104px);font-weight:600;letter-spacing:-4px;text-transform:uppercase;line-height:.9;text-align:center}
+  #gate .sub{font-family:var(--mono);font-size:13px;letter-spacing:5px;color:var(--dim);text-transform:uppercase;text-align:center;line-height:2}
+  #gate .cta{border:1px solid var(--acid);color:var(--acid);font-family:var(--mono);font-size:15px;
+    letter-spacing:7px;padding:20px 44px;text-transform:uppercase}
+  #gate.gone{display:none}
+  .badge{position:fixed;right:16px;top:16px;z-index:150;font-family:var(--mono);font-size:10px;
+    letter-spacing:3px;color:var(--dim);text-align:right;line-height:2}
+  .badge.gone{display:none}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas class="layer" id="cv"></canvas>
+  <div class="layer scan" id="scan"></div>
+  <div class="layer grain"></div>
+  <div class="layer vig"></div>
+</div>
+
+<div class="badge" id="badge">M MUTE // V VOICE OFF // R RESTART</div>
+
+<div id="gate">
+  <div class="sub">POLYMARCT // TRAILER // 30 SECONDS</div>
+  <div class="big">The future<br>has a price.</div>
+  <div class="cta" id="play">PRESS PLAY</div>
+  <div class="sub">SOUND ON. HEADPHONES IF YOU HAVE THEM.</div>
+</div>
+
+<script src="motion.js"></script>
+<script>
+/* ============================================================
+   POLYMARCT // TRAILER
+   30 seconds, cut on a 120 BPM grid, no slow open: frame one is
+   already an impact. Every shot is drawn on one canvas so hits,
+   inversions and chromatic splits are frame exact.
+   ============================================================ */
+
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const off = document.createElement("canvas"); off.width = 1920; off.height = 1080;
+const octx = off.getContext("2d");
+cv.width = 1920; cv.height = 1080;
+
+const E = MO.E, lerp = MO.lerp, clamp = MO.clamp, inv = MO.inv, T = MO.text;
+const ACID = "#CCFF00", WHITE = "#F2EFE9", BLACK = "#08090A", BLUE = "#2F6BFF", NO = "#FF4D2E";
+const field = new MO.Field(1920, 1080, "trailer", 300);
+const rnd = MO.rng("trailershots");
+
+const DUR = 30;
+const OPINIONS = ["IT GOES TO ZERO","IT GOES TO 200K","TRUST ME","I'M TELLING YOU","NOBODY SEES IT","IT'S OVER","IT'S EARLY"];
+const QUESTIONS = [
+  "WILL BTC REACH $125,000 BEFORE OCTOBER 31?",
+  "WILL THE FED CUT RATES AT THE NEXT MEETING?",
+  "WILL ARC EXCEED 1M DAILY TRANSACTIONS?",
+  "WILL OPENAI SHIP A NEW FRONTIER MODEL?",
+  "WILL STABLECOIN SUPPLY CROSS $300B?",
+  "WILL NVDA BEAT CONSENSUS REVENUE?",
+  "WILL A PERPS VENUE LAUNCH ON ARC?",
+  "WILL BTC DOMINANCE FALL BELOW 50%?"
+];
+
+/* post state, driven by the shots */
+const P = { shake:0, chroma:0, invert:0, flash:0, scale:1, blur:0 };
+
+/* ---------- drawing helpers ---------- */
+function bg(c, col){ octx.fillStyle = col; octx.fillRect(0,0,1920,1080); }
+function grid(c, a, gap){
+  octx.strokeStyle = `rgba(242,239,233,${a})`; octx.lineWidth = 1;
+  octx.beginPath();
+  for (let x=0;x<1920;x+=gap){ octx.moveTo(x+.5,0); octx.lineTo(x+.5,1080); }
+  for (let y=0;y<1080;y+=gap){ octx.moveTo(0,y+.5); octx.lineTo(1920,y+.5); }
+  octx.stroke();
+}
+function centerType(str, size, col, y, track){
+  T(octx, str, 960, y === undefined ? 600 : y, { size, weight:600, color:col, align:"center", track: track===undefined ? -size*0.05 : track });
+}
+function monoType(str, size, col, x, y, track, align){
+  T(octx, str, x, y, { size, mono:true, weight:500, color:col, track: track||size*0.22, align: align||"left" });
+}
+function wrapCenter(str, size, col, y, maxw){
+  const words = str.split(" "); const lines = []; let line = "";
+  octx.font = `600 ${size}px 'Inter Tight',Inter,Helvetica,Arial,sans-serif`;
+  for (const w of words){
+    const t2 = line ? line+" "+w : w;
+    if (octx.measureText(t2).width > maxw && line){ lines.push(line); line = w; } else line = t2;
+  }
+  if (line) lines.push(line);
+  lines.forEach((l,i)=> centerType(l, size, col, y + i*size*0.96));
+  return lines.length;
+}
+function rule(x,y,w,a){ octx.fillStyle = `rgba(242,239,233,${a})`; octx.fillRect(x,y,w,2); }
+
+function marketCard(x, y, w, q, pct, d, alpha, scale, rot){
+  octx.save();
+  octx.globalAlpha = alpha;
+  octx.translate(x, y); octx.rotate(rot||0); octx.scale(scale||1, scale||1);
+  const h = w*0.62;
+  octx.shadowColor = "rgba(0,0,0,.8)"; octx.shadowBlur = 60; octx.shadowOffsetY = 30;
+  octx.fillStyle = BLACK; octx.fillRect(-w/2,-h/2,w,h);
+  octx.shadowBlur = 0; octx.shadowOffsetY = 0;
+  octx.strokeStyle = "rgba(242,239,233,.16)"; octx.lineWidth = 1.5; octx.strokeRect(-w/2,-h/2,w,h);
+  const px = -w/2 + w*0.07;
+  T(octx, q.slice(0,42), px, -h/2 + h*0.26, { size:w*0.052, weight:500, color:WHITE });
+  T(octx, pct + "%", px, h/2 - h*0.30, { size:w*0.20, weight:600, color:WHITE, track:-w*0.008 });
+  T(octx, d, px + w*0.40, h/2 - h*0.30, { size:w*0.052, mono:true, color: d.startsWith("-")?NO:ACID });
+  octx.fillStyle = "rgba(242,239,233,.12)"; octx.fillRect(px, h/2 - h*0.20, w*0.86, 5);
+  octx.fillStyle = ACID; octx.fillRect(px, h/2 - h*0.20, w*0.86*(pct/100), 5);
+  octx.restore();
+}
+
+function chart(reveal, x, y, w, h, hot){
+  const pts = [];
+  for (let i=0;i<90;i++) pts.push(.42 + Math.sin(i/7)*.06 + i/520 + Math.sin(i/2.6)*.014);
+  const n = Math.max(2, Math.round(pts.length*reveal));
+  const mn = .34, mx = .72, rg = mx-mn;
+  const X = i => x + (i/(pts.length-1))*w, Y = p => y + h - ((p-mn)/rg)*h;
+  octx.beginPath(); octx.moveTo(x, y+h);
+  for (let i=0;i<n;i++) octx.lineTo(X(i), Y(pts[i]));
+  octx.lineTo(X(n-1), y+h); octx.closePath();
+  octx.fillStyle = "rgba(204,255,0,.10)"; octx.fill();
+  octx.beginPath();
+  for (let i=0;i<n;i++) i?octx.lineTo(X(i),Y(pts[i])):octx.moveTo(X(i),Y(pts[i]));
+  octx.strokeStyle = ACID; octx.lineWidth = hot?5:3; octx.stroke();
+  octx.beginPath(); octx.arc(X(n-1), Y(pts[n-1]), 9, 0, 7); octx.fillStyle = ACID; octx.fill();
+}
+
+/* the market map, igniting */
+const NODES = Array.from({length:46},(_,i)=>{
+  const a = (i/46)*Math.PI*2 + rnd()*.6, r = 90 + rnd()*330;
+  return { x: Math.cos(a)*r*1.5, y: Math.sin(a)*r*.75, r: 6+rnd()*14, p: .1+rnd()*.85,
+           col: [ACID,BLUE,WHITE,NO,"#8A8F94"][ (rnd()*5)|0 ], born: rnd() };
+});
+function mapShot(p, zoom){
+  octx.save(); octx.translate(960,540); octx.scale(zoom,zoom);
+  NODES.forEach((n,i)=>{
+    if (n.born > p) return;
+    NODES.forEach((m,j)=>{
+      if (j<=i || m.born > p) return;
+      const d = Math.hypot(n.x-m.x, n.y-m.y);
+      if (d > 260) return;
+      octx.beginPath(); octx.moveTo(n.x,n.y); octx.lineTo(m.x,m.y);
+      octx.strokeStyle = `rgba(242,239,233,${.16*(1-d/260)})`; octx.lineWidth = 1.4; octx.stroke();
+    });
+  });
+  NODES.forEach(n=>{
+    if (n.born > p) return;
+    const k = clamp((p-n.born)*6,0,1);
+    octx.beginPath(); octx.arc(n.x,n.y,(n.r+5)*k,-Math.PI/2,-Math.PI/2+Math.PI*2*n.p);
+    octx.strokeStyle = n.col; octx.lineWidth = 3; octx.stroke();
+    octx.beginPath(); octx.arc(n.x,n.y,n.r*k,0,7);
+    octx.fillStyle = BLACK; octx.fill(); octx.strokeStyle = n.col; octx.lineWidth = 2; octx.stroke();
+  });
+  octx.restore();
+}
+
+/* ============================================================
+   THE CUT LIST
+   ============================================================ */
+const SHOTS = [];
+const shot = (t, dur, draw) => SHOTS.push({ t, dur, draw });
+
+/* --- 0.0 COLD OPEN: the question, already shouting --- */
+shot(0, 0.5, p => {
+  bg(0, p < .12 ? ACID : BLACK);
+  const col = p < .12 ? BLACK : WHITE;
+  grid(0, .05, 120);
+  centerType("WHAT HAPPENS", 172, col, 500);
+  centerType("NEXT?", 172, p < .12 ? BLACK : ACID, 660);
+  P.chroma = (1-p)*14; P.shake = (1-p)*16;
+});
+
+/* --- 0.5 the noise of opinion, strobed --- */
+for (let i=0;i<6;i++){
+  shot(0.5 + i*0.21, 0.21, p => {
+    const k = (i%2===0);
+    bg(0, k ? BLACK : WHITE);
+    const col = k ? WHITE : BLACK;
+    grid(0, k?.05:.09, 90);
+    wrapCenter(OPINIONS[i % OPINIONS.length], 128, col, 560, 1500);
+    monoType(k?"OPINION":"OPINION", 20, k ? "rgba(242,239,233,.4)" : "rgba(8,9,10,.45)", 960, 300, 9, "center");
+    P.chroma = 5; P.shake = 4;
+  });
+}
+
+/* --- 1.76 questions flying past --- */
+for (let i=0;i<9;i++){
+  shot(1.76 + i*0.3, 0.3, p => {
+    bg(0, BLACK);
+    field.draw(octx, performance.now()/1000, { speed: 9, alpha: .5, blur:.35 });
+    grid(0, .04, 120);
+    const q = QUESTIONS[i % QUESTIONS.length];
+    const dir = i % 2 ? 1 : -1;
+    octx.save();
+    octx.translate(960 + dir*lerp(420,-420,E.outQuad(p)), 540 + (i%3-1)*120);
+    octx.rotate(dir*0.03);
+    T(octx, q, 0, 0, { size:64, weight:600, color: i%3===0 ? ACID : WHITE, align:"center", track:-2, alpha: 1-Math.abs(p-.5) });
+    octx.restore();
+    monoType("EVERY DAY THE WORLD ARGUES ABOUT WHAT HAPPENS NEXT", 19, "rgba(242,239,233,.34)", 960, 1000, 9, "center");
+    P.chroma = 3; P.shake = 2;
+  });
+}
+
+/* --- 4.46 EVERYONE HAS AN OPINION --- */
+shot(4.46, 1.5, p => {
+  bg(0, BLACK);
+  grid(0, .05, 120);
+  field.draw(octx, performance.now()/1000, { speed: 1.2, alpha: .35 });
+  const w = E.outExpo(clamp(p*3,0,1));
+  octx.save(); octx.beginPath(); octx.rect(0,0,1920*w,1080); octx.clip();
+  centerType("EVERYONE HAS", 150, WHITE, 520);
+  centerType("AN OPINION.", 150, WHITE, 668);
+  octx.restore();
+  P.chroma = p < .08 ? 12 : 1.4; P.shake = p < .08 ? 10 : 0.6;
+});
+
+/* --- 5.96 NOBODY HAS A NUMBER --- */
+shot(5.96, 1.5, p => {
+  bg(0, p < .06 ? WHITE : BLACK);
+  grid(0, .05, 120);
+  const col = p < .06 ? BLACK : WHITE;
+  centerType("NOBODY HAS", 150, col, 520);
+  centerType("A NUMBER.", 150, p < .06 ? BLACK : NO, 668);
+  P.chroma = p < .1 ? 16 : 2; P.shake = p < .1 ? 14 : 1;
+});
+
+/* --- 7.46 the gap. tension. --- */
+shot(7.46, 0.44, p => { bg(0, BLACK); P.chroma = 0; P.shake = 0; });
+
+/* --- 7.9 the unit draws itself --- */
+shot(7.9, 1.6, p => {
+  bg(0, BLACK);
+  grid(0, .06, 120);
+  const s = lerp(150, 430, E.outExpo(clamp(p*1.5,0,1)));
+  MO.drawMark(octx, 960-s/2, 470-s/2, s, { draw: E.outExpo(clamp(p*2.2,0,1)), shift: Math.sin(p*20)*(1-p)*3 });
+  monoType("ONE SQUARE // ONE UNIT OF PROBABILITY", 21, "rgba(242,239,233,.45)", 960, 790, 10, "center");
+  const a = clamp(inv(p,.45,.8),0,1);
+  T(octx, "UNTIL THE MARKET GIVES ONE.", 960, 880, { size:46, weight:600, color:ACID, align:"center", track:-1, alpha:a });
+  P.chroma = p<.06 ? 10 : 1; P.shake = p<.06 ? 8 : 0;
+});
+
+/* --- 9.5 the number slams in --- */
+shot(9.5, 1.1, p => {
+  bg(0, BLACK);
+  grid(0, .05, 120);
+  const k = E.settle(clamp(p*2.6,0,1));
+  const size = lerp(620, 300, k);
+  T(octx, "67%", 960, lerp(700,640,k), { size, weight:600, color:WHITE, align:"center", track:-size*0.06 });
+  monoType("YES", 40, "rgba(242,239,233,.5)", 960, 740, 18, "center");
+  const bw = 1200*clamp(p*2,0,1);
+  octx.fillStyle = "rgba(242,239,233,.12)"; octx.fillRect(360, 800, 1200, 10);
+  octx.fillStyle = ACID; octx.fillRect(360, 800, bw*0.67, 10);
+  T(octx, "WILL BTC REACH $125,000 BEFORE OCTOBER 31?", 960, 360, { size:34, mono:true, color:"rgba(242,239,233,.55)", align:"center", track:5 });
+  P.chroma = p<.10 ? 20 : 1.2; P.shake = p<.10 ? 18 : 0.5;
+});
+
+/* --- 10.6 PRODUCT MONTAGE, accelerating --- */
+const MONT = [
+  [0.44, p => {                                   // the deck
+    bg(0, BLACK); grid(0,.04,120);
+    field.draw(octx, performance.now()/1000, { speed:3, alpha:.4, blur:.2 });
+    for (let i=0;i<4;i++){
+      const off2 = i*0.16;
+      marketCard(300 + i*460, 540 + (i%2?70:-40), 420,
+        QUESTIONS[i], [67,42,71,69][i], ["+8.4%","+6.1%","+11.2%","+4.1%"][i],
+        clamp((p-off2)*6,0,1), lerp(.7,1,E.outExpo(clamp((p-off2)*4,0,1))), (i%2?1:-1)*0.02);
+    }
+  }],
+  [0.5, p => {                                    // the chart draws
+    bg(0, BLACK); grid(0,.04,120);
+    T(octx, "67%", 180, 380, { size:220, weight:600, color:WHITE, track:-12 });
+    monoType("+8.4% / 24H", 34, ACID, 700, 380, 6);
+    chart(clamp(p*1.6,0,1), 180, 480, 1560, 420, true);
+  }],
+  [0.34, p => {                                   // TAKE YES
+    bg(0, p<.3 ? ACID : BLACK);
+    const col = p<.3 ? BLACK : WHITE;
+    grid(0, p<.3?.08:.04, 120);
+    centerType("TAKE YES", 190, col, 600);
+    monoType("67¢", 60, p<.3 ? BLACK : ACID, 960, 720, 14, "center");
+  }],
+  [0.34, p => {                                   // it reprices
+    bg(0, BLACK); grid(0,.04,120);
+    const v = Math.round(lerp(67, 74, E.outExpo(p)));
+    T(octx, v + "%", 960, 640, { size:380, weight:600, color:WHITE, align:"center", track:-22 });
+    monoType("CONSENSUS SHIFTING", 26, ACID, 960, 760, 11, "center");
+  }],
+  [0.3, p => {                                    // the tape
+    bg(0, BLACK); grid(0,.04,120);
+    monoType("LIVE TRADES", 24, "rgba(242,239,233,.45)", 200, 260, 11);
+    for (let i=0;i<7;i++){
+      const a = clamp((p*7)-i,0,1);
+      const y = 360 + i*92;
+      octx.globalAlpha = a;
+      monoType("0x" + (i*37%256).toString(16).toUpperCase().padStart(2,"0") + "...19A", 34, "rgba(242,239,233,.6)", 200, y, 5);
+      monoType(["$18,420 YES","$7,200 NO","$41,900 YES","$2,300 NO","$96,400 YES","$5,100 YES","$284,000 YES"][i],
+               34, i%2 ? NO : ACID, 1720, y, 5, "right");
+      octx.globalAlpha = 1;
+      octx.fillStyle = "rgba(242,239,233,.10)"; octx.fillRect(200, y+22, 1520, 1);
+    }
+  }],
+  [0.56, p => {                                   // the map ignites
+    bg(0, BLACK);
+    mapShot(clamp(p*1.5,0,1), lerp(.55,.85,E.outQuad(p)));
+    monoType("EVERY QUESTION IS CONNECTED", 24, "rgba(242,239,233,.5)", 960, 1000, 11, "center");
+  }],
+  [0.3, p => {                                    // the signal
+    bg(0, BLACK); grid(0,.04,120);
+    monoType("THE SIGNAL", 26, ACID, 200, 250, 12);
+    for (let i=0;i<5;i++){
+      const a = clamp((p*6)-i,0,1); octx.globalAlpha = a;
+      const y = 380 + i*130;
+      monoType(["PROBABILITY","VOLUME SPIKE","LARGE TRADE","CONSENSUS","MARKET MAKER"][i], 30, "rgba(242,239,233,.55)", 200, y, 7);
+      monoType(["+17.2%","4.8x AVG","$284,000","YES → NO","DETECTED"][i], 40, i===3?BLUE:ACID, 1720, y, 5, "right");
+      octx.globalAlpha = 1;
+    }
+  }]
+];
+let mt = 10.6;
+MONT.forEach(([d, fn]) => {
+  shot(mt, d, p => { fn(p); P.chroma = p < .12 ? 9 : 1; P.shake = p < .12 ? 7 : 0.6; });
+  mt += d;
+});
+
+/* --- 13.38 ONE QUESTION. TWO OUTCOMES. --- */
+shot(13.38, 1.5, p => {
+  bg(0, BLACK);
+  mapShot(1, lerp(.85,1.05,p));
+  octx.fillStyle = "rgba(8,9,10,.72)"; octx.fillRect(0,0,1920,1080);
+  const w = E.outExpo(clamp(p*2.6,0,1));
+  octx.save(); octx.beginPath(); octx.rect(0,0,1920*w,1080); octx.clip();
+  centerType("ONE QUESTION.", 138, WHITE, 500);
+  centerType("TWO OUTCOMES.", 138, ACID, 640);
+  octx.restore();
+  monoType("INFINITE INFORMATION", 24, "rgba(242,239,233,.45)", 960, 760, 12, "center");
+  P.chroma = p<.08 ? 13 : 1.2; P.shake = p<.08 ? 11 : 0.5;
+});
+
+/* --- 14.88 REAL MONEY. REAL CONVICTION. --- */
+shot(14.88, 1.5, p => {
+  bg(0, BLACK); grid(0,.05,120);
+  field.draw(octx, performance.now()/1000, { speed:2.4, alpha:.4, blur:.2 });
+  centerType("REAL MONEY.", 138, WHITE, 480);
+  centerType("REAL CONVICTION.", 138, WHITE, 620);
+  const a = clamp(inv(p,.4,.75),0,1);
+  monoType("SETTLES IN USDC ON ARC", 30, ACID, 960, 760, 13, "center");
+  octx.globalAlpha = a;
+  monoType("NO OTHER ASSET // NO OTHER CHAIN", 22, "rgba(242,239,233,.45)", 960, 812, 10, "center");
+  octx.globalAlpha = 1;
+  P.chroma = p<.08 ? 12 : 1; P.shake = p<.08 ? 10 : 0.4;
+});
+
+/* --- 16.38 THE BUILD: everything, faster and faster --- */
+const BUILD_START = 16.38, BUILD_END = 20.4;
+let bt = BUILD_START, bi = 0;
+while (bt < BUILD_END){
+  const d = lerp(0.26, 0.1, inv(bt, BUILD_START, BUILD_END));
+  const idx = bi;
+  shot(bt, d, p => {
+    const mode = idx % 6;
+    if (mode === 0){
+      bg(0, BLACK); grid(0,.05,90);
+      T(octx, ["67%","42%","71%","83%","29%","58%"][idx%6], 960, 700, { size:520, weight:600, color:WHITE, align:"center", track:-30 });
+    } else if (mode === 1){
+      bg(0, ACID);
+      wrapCenter(QUESTIONS[idx % QUESTIONS.length], 96, BLACK, 460, 1600);
+    } else if (mode === 2){
+      bg(0, BLACK); chart(1, 100, 300, 1720, 500, true);
+      monoType("MOVING FAST", 30, ACID, 960, 940, 13, "center");
+    } else if (mode === 3){
+      bg(0, BLACK); mapShot(1, 1.15);
+    } else if (mode === 4){
+      bg(0, WHITE);
+      centerType(["HEATING UP","CONSENSUS SHIFTING","INFORMATION EVENT","EXTREME CONFIDENCE","DEAD EVEN","CONTRARIAN"][idx%6], 104, BLACK, 580);
+    } else {
+      bg(0, BLACK); grid(0,.07,60);
+      for (let i=0;i<3;i++)
+        marketCard(480 + i*480, 540, 400, QUESTIONS[(idx+i)%QUESTIONS.length],
+          [67,42,71][i], ["+8.4%","+6.1%","+11.2%"][i], 1, 1, (i-1)*0.04);
+    }
+    P.chroma = lerp(6, 26, inv(bt, BUILD_START, BUILD_END));
+    P.shake  = lerp(5, 22, inv(bt, BUILD_START, BUILD_END));
+  });
+  bt += d; bi++;
+}
+
+/* --- 20.4 the cut to nothing --- */
+shot(20.4, 0.42, p => { bg(0, BLACK); P.chroma = 0; P.shake = 0; });
+
+/* --- 20.82 REALITY DECIDES --- */
+shot(20.82, 1.6, p => {
+  bg(0, p < .07 ? ACID : BLACK);
+  const col = p < .07 ? BLACK : WHITE;
+  grid(0,.05,120);
+  centerType("REALITY", 200, col, 520);
+  centerType("DECIDES.", 200, p < .07 ? BLACK : ACID, 700);
+  P.chroma = p<.12 ? 22 : 1.4; P.shake = p<.12 ? 20 : 0.6;
+});
+
+/* --- 22.42 the verdict --- */
+shot(22.42, 1.3, p => {
+  bg(0, BLACK); grid(0,.05,120);
+  monoType("THE VERDICT ENGINE", 26, "rgba(242,239,233,.5)", 960, 330, 12, "center");
+  T(octx, "WILL BTC REACH $125,000 BEFORE OCTOBER 31?", 960, 420, { size:34, mono:true, color:"rgba(242,239,233,.45)", align:"center", track:4 });
+  const k = E.settle(clamp(p*3,0,1));
+  octx.save();
+  octx.translate(960, 660); octx.rotate(-0.09); octx.scale(lerp(2.8,1,k), lerp(2.8,1,k));
+  octx.strokeStyle = ACID; octx.lineWidth = 10; octx.strokeRect(-260,-110,520,220);
+  T(octx, "YES", 0, 48, { size:150, weight:700, color:ACID, align:"center", track:-4 });
+  octx.restore();
+  const a = clamp(inv(p,.5,.8),0,1);
+  octx.globalAlpha = a;
+  monoType("READING $125,412.00 // COINBASE BTC-USD // DISPUTE WINDOW CLOSED", 21, "rgba(242,239,233,.45)", 960, 900, 8, "center");
+  octx.globalAlpha = 1;
+  P.chroma = p<.1 ? 20 : 1; P.shake = p<.1 ? 18 : 0.4;
+});
+
+/* --- 23.72 THE MARKET PAYS --- */
+shot(23.72, 1.7, p => {
+  bg(0, BLACK); grid(0,.05,120);
+  monoType("POSITION SETTLED", 26, "rgba(242,239,233,.5)", 960, 360, 12, "center");
+  const v = 373.13 * E.outExpo(clamp(p*1.8,0,1));
+  T(octx, v.toFixed(2), 960, 620, { size:250, weight:600, color:WHITE, align:"center", track:-14 });
+  monoType("USDC ON ARC", 38, ACID, 960, 710, 16, "center");
+  const a = clamp(inv(p,.42,.7),0,1);
+  octx.globalAlpha = a;
+  centerType("THE MARKET PAYS.", 110, WHITE, 880);
+  octx.globalAlpha = 1;
+  P.chroma = p<.08 ? 16 : 1; P.shake = p<.08 ? 14 : 0.4;
+});
+
+/* --- 25.42 the collapse into the mark --- */
+shot(25.42, 1.3, p => {
+  bg(0, BLACK);
+  mapShot(1, lerp(1.1, .05, E.inOutCubic(p)));
+  const s = lerp(20, 340, E.settle(clamp(inv(p,.35,1),0,1)));
+  if (s > 22) MO.drawMark(octx, 960-s/2, 470-s/2, s, { draw:1, shift:Math.sin(p*26)*(1-p)*4 });
+  P.chroma = lerp(18, 2, p); P.shake = lerp(16, 1, p);
+});
+
+/* --- 26.72 the lock --- */
+shot(26.72, 3.28, p => {
+  bg(0, BLACK);
+  grid(0, .05, 120);
+  field.draw(octx, performance.now()/1000, { speed:.5, alpha:.3 });
+  const s = 300;
+  MO.drawMark(octx, 960-s/2, 300-s/2, s, { draw:1, shift:Math.sin(p*5)*1.6 });
+  const w = E.outExpo(clamp(inv(p,.08,.4),0,1));
+  octx.save(); octx.beginPath(); octx.rect(960-960*w, 0, 1920*w, 1080); octx.clip();
+  centerType("POLYMARCT", 186, WHITE, 640);
+  octx.restore();
+  const a1 = clamp(inv(p,.34,.52),0,1), a2 = clamp(inv(p,.46,.64),0,1), a3 = clamp(inv(p,.58,.76),0,1);
+  octx.globalAlpha = a1; monoType("THE FUTURE HAS A PRICE.", 34, ACID, 960, 740, 15, "center"); octx.globalAlpha = 1;
+  octx.globalAlpha = a2; monoType("THE LEADING PREDICTION MARKET ON ARC", 22, "rgba(242,239,233,.5)", 960, 810, 10, "center"); octx.globalAlpha = 1;
+  octx.globalAlpha = a3; monoType("$PMARC // SETTLES IN USDC ON ARC", 20, "rgba(242,239,233,.38)", 960, 862, 9, "center"); octx.globalAlpha = 1;
+  P.chroma = p < .05 ? 18 : lerp(2, 0, clamp(p*3,0,1));
+  P.shake = p < .05 ? 14 : 0;
+  if (p > .93){ const f = inv(p,.93,1); octx.fillStyle = `rgba(8,9,10,${f})`; octx.fillRect(0,0,1920,1080); }
+});
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderAt(t){
+  P.chroma = 0; P.shake = 0; P.flash = 0;
+  let cur = null;
+  for (const s of SHOTS) if (t >= s.t && t < s.t + s.dur) cur = s;
+  if (!cur) cur = SHOTS[SHOTS.length-1];
+  const p = clamp((t - cur.t) / cur.dur, 0, 1);
+  octx.save(); cur.draw(p, t); octx.restore();
+
+  ctx.clearRect(0,0,1920,1080);
+  ctx.fillStyle = "#000"; ctx.fillRect(0,0,1920,1080);
+  const sx = (Math.random()-.5) * P.shake, sy = (Math.random()-.5) * P.shake;
+
+  ctx.drawImage(off, sx, sy);
+  if (P.chroma > .5){
+    /* an edge fringe, not a bloom: two low-alpha offset copies */
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = .16;
+    ctx.drawImage(off, sx - P.chroma, sy);
+    ctx.drawImage(off, sx + P.chroma, sy * 1.0);
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+  }
+}
+
+/* ============================================================
+   THE SCORE
+   Synthesised to the cut grid: 120 BPM, sub, pulse, kicks on the
+   cuts, a riser into the build, two hard stops, one final impact.
+   ============================================================ */
+let AC = null, master = null, muted = false;
+
+function boom(t, f0, f1, dur, gain){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = "sine";
+  o.frequency.setValueAtTime(f0, t);
+  o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(master); o.start(t); o.stop(t + dur + .05);
+}
+function noiseBuf(){
+  const n = AC.sampleRate * 3, b = AC.createBuffer(1, n, AC.sampleRate), d = b.getChannelData(0);
+  for (let i=0;i<n;i++) d[i] = Math.random()*2-1;
+  return b;
+}
+let NB = null;
+function noise(t, dur, f0, f1, gain, q){
+  const s = AC.createBufferSource(); s.buffer = NB;
+  const bp = AC.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = q||1.2;
+  bp.frequency.setValueAtTime(f0, t);
+  bp.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  const g = AC.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + dur*0.7);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s.connect(bp).connect(g).connect(master); s.start(t); s.stop(t + dur + .05);
+}
+function hit(t, gain){
+  const s = AC.createBufferSource(); s.buffer = NB;
+  const hp = AC.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1400;
+  const g = AC.createGain();
+  g.gain.setValueAtTime(gain, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + .09);
+  s.connect(hp).connect(g).connect(master); s.start(t); s.stop(t + .12);
+}
+function stab(t, freq, dur, gain){
+  const o = AC.createOscillator(), o2 = AC.createOscillator(), g = AC.createGain();
+  const lp = AC.createBiquadFilter(); lp.type = "lowpass";
+  lp.frequency.setValueAtTime(3200, t); lp.frequency.exponentialRampToValueAtTime(420, t+dur);
+  o.type = "sawtooth"; o2.type = "sawtooth";
+  o.frequency.value = freq; o2.frequency.value = freq * 1.4983;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + .015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(lp); o2.connect(lp); lp.connect(g).connect(master);
+  o.start(t); o2.start(t); o.stop(t+dur+.05); o2.stop(t+dur+.05);
+}
+function sub(t, dur, gain, f){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = "sine"; o.frequency.value = f || 41;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + .4);
+  g.gain.setValueAtTime(gain, t + dur - .4);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(master); o.start(t); o.stop(t + dur + .05);
+}
+
+function scheduleScore(T0){
+  NB = noiseBuf();
+  /* cold open */
+  boom(T0, 150, 32, 1.4, .9); hit(T0, .5);
+  for (let i=0;i<6;i++){ hit(T0 + 0.5 + i*0.21, .28); }
+  sub(T0 + 0.5, 3.9, .32);
+  /* the questions, a ticking pulse */
+  for (let i=0;i<9;i++) hit(T0 + 1.76 + i*0.3, .16);
+  /* statements */
+  boom(T0 + 4.46, 120, 36, .9, .55); stab(T0 + 4.46, 98, .5, .13);
+  boom(T0 + 5.96, 130, 34, .9, .6);  stab(T0 + 5.96, 110, .5, .14);
+  /* the gap: nothing at all from 7.46 to 7.9 */
+  /* the unit */
+  boom(T0 + 7.9, 90, 40, 1.2, .5);
+  noise(T0 + 7.9, 1.5, 300, 4200, .10, .9);
+  sub(T0 + 7.9, 2.8, .30);
+  /* the number */
+  boom(T0 + 9.5, 180, 30, 1.1, .85); hit(T0 + 9.5, .45);
+  /* montage: a kick per cut, four to the floor underneath */
+  let m = 10.6;
+  [0.44,0.5,0.34,0.34,0.3,0.56,0.3].forEach(d => { boom(T0+m, 140, 42, .28, .6); hit(T0+m,.3); m += d; });
+  sub(T0 + 10.6, 3.0, .26);
+  for (let k=0;k<12;k++) hit(T0 + 10.6 + k*0.25, .12);
+  /* statements two */
+  boom(T0 + 13.38, 120, 36, .9, .6); stab(T0 + 13.38, 130, .6, .14);
+  boom(T0 + 14.88, 120, 36, .9, .6); stab(T0 + 14.88, 146, .6, .14);
+  sub(T0 + 13.38, 3.0, .28);
+  /* the build: accelerating kicks + a long riser */
+  let b = 16.38, i2 = 0;
+  while (b < 20.4){
+    const d = lerp(0.26, 0.1, inv(b, 16.38, 20.4));
+    boom(T0 + b, 150, 46, Math.max(.16, d), .55 + i2*0.012);
+    hit(T0 + b, .22);
+    if (i2 % 4 === 0) stab(T0 + b, 98 * (1 + i2*0.03), .3, .10);
+    b += d; i2++;
+  }
+  noise(T0 + 16.38, 4.0, 220, 9000, .22, 1.1);
+  sub(T0 + 16.38, 4.0, .34);
+  /* the stop */
+  boom(T0 + 20.4, 200, 28, 1.6, 1.0); hit(T0 + 20.4, .6);
+  /* reality decides */
+  boom(T0 + 20.82, 140, 30, 1.4, .8);
+  sub(T0 + 20.82, 3.2, .3);
+  /* verdict */
+  boom(T0 + 22.42, 190, 30, 1.3, .9); hit(T0 + 22.42, .5); stab(T0 + 22.42, 146, .8, .16);
+  /* settle */
+  boom(T0 + 23.72, 120, 34, 1.2, .6);
+  noise(T0 + 23.72, 1.2, 600, 200, .08, 1.4);
+  /* collapse + lock */
+  noise(T0 + 25.42, 1.3, 180, 5200, .16, 1.0);
+  boom(T0 + 26.72, 210, 26, 2.6, 1.0); hit(T0 + 26.72, .55);
+  stab(T0 + 26.72, 98, 2.2, .12);
+  sub(T0 + 26.72, 3.2, .26, 36);
+}
+
+/* ============================================================
+   THE VOICE
+   A real recording drops in as audio/vo.mp3 when there is one.
+   Until then the browser speaks the same script on the same cues,
+   which is a scratch track, not the final voice.
+   ============================================================ */
+const VO = [
+  [1.80, "Every day, the world argues about what happens next."],
+  [4.70, "Everyone has an opinion."],
+  [6.20, "Nobody has a number."],
+  [8.10, "Until the market gives one."],
+  [13.60, "One question. Two outcomes."],
+  [15.10, "Real money. Real conviction."],
+  [21.05, "Reality decides."],
+  [24.40, "The market pays."],
+  [27.10, "Polymarct. The future has a price."]
+];
+let voOn = new URLSearchParams(location.search).get("vo") !== "0";
+let voEl = null, voTimers = [];
+
+function pickVoice(){
+  const vs = speechSynthesis.getVoices().filter(v => /en(-|_)?(GB|US)?/i.test(v.lang));
+  return vs.find(v => /daniel|alex|google uk english male|male/i.test(v.name)) || vs[0] || null;
+}
+function speak(line){
+  if (!voOn || !window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(line);
+  const v = pickVoice(); if (v) u.voice = v;
+  u.rate = 0.88; u.pitch = 0.55; u.volume = 1;
+  speechSynthesis.speak(u);
+}
+function startVoice(){
+  voTimers.forEach(clearTimeout); voTimers = [];
+  if (voEl){ voEl.currentTime = 0; voEl.play().catch(()=>{}); return; }
+  if (!voOn) return;
+  VO.forEach(([t, line]) => voTimers.push(setTimeout(() => speak(line), t*1000)));
+}
+/* if a recorded voice-over exists, it wins */
+fetch("audio/vo.mp3", { method:"HEAD" }).then(r => {
+  if (r.ok){ voEl = new Audio("audio/vo.mp3"); voEl.preload = "auto"; }
+}).catch(()=>{});
+
+/* ============================================================
+   TRANSPORT
+   ============================================================ */
+const q = new URLSearchParams(location.search);
+const rec = q.get("rec") === "1";
+if (rec) document.getElementById("badge").classList.add("gone");
+
+function fit(){
+  const s = Math.min(innerWidth/1920, innerHeight/1080);
+  document.getElementById("stage").style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+addEventListener("resize", fit, { passive:true }); fit();
+
+let t0 = 0, running = false;
+
+function start(){
+  document.getElementById("gate").classList.add("gone");
+  if (!AC){
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    master = AC.createGain(); master.gain.value = muted ? 0 : 0.85;
+    const comp = AC.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.ratio.value = 7; comp.attack.value = .003; comp.release.value = .18;
+    master.connect(comp).connect(AC.destination);
+  }
+  AC.resume();
+  scheduleScore(AC.currentTime + 0.06);
+  startVoice();
+  t0 = performance.now()/1000;
+  running = true;
+}
+
+function restart(){
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  if (voEl) voEl.pause();
+  if (AC){ master.disconnect(); AC.close(); AC = null; }
+  start();
+}
+
+document.getElementById("gate").onclick = start;
+addEventListener("keydown", e => {
+  if (e.code === "Space"){ e.preventDefault(); running ? (running = false) : (t0 = performance.now()/1000 - lastT, running = true); }
+  if (e.key === "r" || e.key === "R") restart();
+  if (e.key === "m" || e.key === "M"){ muted = !muted; if (master) master.gain.value = muted ? 0 : .85; }
+  if (e.key === "v" || e.key === "V"){
+    voOn = !voOn;
+    if (!voOn){ if (window.speechSynthesis) speechSynthesis.cancel(); voTimers.forEach(clearTimeout); if (voEl) voEl.pause(); }
+  }
+  if (e.key === "h" || e.key === "H") document.getElementById("badge").classList.toggle("gone");
+});
+
+let lastT = 0;
+(function loop(){
+  requestAnimationFrame(loop);
+  if (!running){ renderAt(lastT); return; }
+  let t = performance.now()/1000 - t0;
+  if (t > DUR){ restart(); t = 0; }
+  lastT = t;
+  renderAt(t);
+})();
+
+/* seek(t) holds a frame for review and for frame-accurate capture */
+window.seek = t => { lastT = t; running = false; renderAt(t); };
+renderAt(0);
+if (window.speechSynthesis) speechSynthesis.getVoices();
+</script>
+</body>
+</html>

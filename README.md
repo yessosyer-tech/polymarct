@@ -29,6 +29,7 @@ python -m http.server 8080
 | `404.html` | "This market doesn't exist. Yet." |
 | `brand/index.html` | Brand system: the mark, construction, the three films, colour and type |
 | `brand/studio.html` | Content Studio: six export formats rendered from live market state, one click PNG |
+| `brand/motion/00-trailer.html` | **Trailer**, 30s, 60 cuts, synthesised score, voice-over |
 | `brand/motion/01-ident.html` | Motion 01, IDENT, 15s |
 | `brand/motion/02-flow.html` | Motion 02, THE FLOW, 26s |
 | `brand/motion/03-network.html` | Motion 03, THE NETWORK, 24s |
@@ -49,7 +50,7 @@ USDC on Arc is the only asset the product accepts: collateral, trades, fees, bon
 
 The mark is **the split unit**: one square is one unit of probability, and the stepped boundary running through it is the price that separates the YES mass from the NO void. Warm white mass, acid price line, a bid ladder on the NO side, and a small square straddling the boundary as the last print. It animates by repricing itself. Logo pack in `brand/logo/`, geometry mirrored in `assets/js/ui.js`, `brand/brand-render.js` and `brand/motion/motion.js`.
 
-Three motion films run on a deterministic timeline at 1920x1080, so a screen recording is repeatable rather than a lucky take. Add `?rec=1` for a clean plate, `&t=6` to seek, `&pause=1` to hold a frame.
+The 30 second trailer cuts on a 120 BPM grid with a score synthesised in the page and a voice-over on timed cues; drop `brand/motion/audio/vo.mp3` in and a real recording takes over from the browser scratch voice. Script and timecodes in `brand/motion/TRAILER-VO.md`. The three product films run on a deterministic timeline at 1920x1080, so a screen recording is repeatable rather than a lucky take. Add `?rec=1` for a clean plate, `&t=6` to seek, `&pause=1` to hold a frame.
 
 ## Design
 

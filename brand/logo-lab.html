@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LOGO LAB // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#111;display:grid;place-items:center;min-height:100vh}canvas{max-width:100%;box-shadow:0 30px 80px rgba(0,0,0,.6)}</style>
+</head>
+<body>
+<canvas id="sheet" width="1800" height="1500"></canvas>
+<script>
+/* Three directions for the mark, drawn from the same 64 unit grid so they can
+   be judged against each other rather than against a memory of the last one. */
+
+const ACID = "#CCFF00", WHITE = "#F2EFE9", BLACK = "#08090A", DIM = "rgba(242,239,233,.22)", DIM2 = "rgba(242,239,233,.34)";
+const P = 0.67;   /* the brand probability, so every mark carries a real number */
+
+/* ---------- A // THE LEVEL ----------
+   A square is one market. One acid line sits at the level the market is
+   trading at, against a scale. The mark is a price, read off a gauge. */
+function markLevel(c, x, y, s, inv){
+  const u = s/64, fg = inv ? BLACK : WHITE, frame = inv ? "rgba(8,9,10,.22)" : DIM, tick = inv ? "rgba(8,9,10,.34)" : DIM2;
+  const acid = inv ? "#8CB000" : ACID;
+  c.save(); c.translate(x,y); c.scale(u,u); c.lineCap = "butt";
+  const ly = 6 + 52*(1-P);
+  c.fillStyle = inv ? "rgba(8,9,10,.10)" : "rgba(242,239,233,.10)";
+  c.fillRect(6, ly, 52, 58-ly);
+  c.strokeStyle = frame; c.lineWidth = 1.5; c.strokeRect(6,6,52,52);
+  c.strokeStyle = tick; c.lineWidth = 1.5;
+  c.beginPath();
+  [14,24,34,44,54].forEach(ty => { c.moveTo(6,ty); c.lineTo(13,ty); });
+  c.stroke();
+  c.strokeStyle = acid; c.lineWidth = 4.5;
+  c.beginPath(); c.moveTo(6, ly); c.lineTo(58, ly); c.stroke();
+  c.fillStyle = fg; c.fillRect(50, ly-4, 8, 8);
+  c.restore();
+}
+
+/* ---------- B // THE BOOK ----------
+   Two sides of the book facing each other. The taller side is where the
+   weight of the money sits, the shorter side is the other outcome, and the
+   acid mark in the gap between them is the last price. Acid stays the price,
+   never a field, which is the one rule the identity has. */
+function markSpread(c, x, y, s, inv){
+  const u = s/64, fg = inv ? BLACK : WHITE, acid = inv ? "#8CB000" : ACID;
+  c.save(); c.translate(x,y); c.scale(u,u);
+  c.fillStyle = fg;
+  /* YES side: taller, 67 percent of the square */
+  c.fillRect(8, 7, 9, 50);
+  c.fillRect(8, 7, 20, 8);
+  c.fillRect(8, 49, 20, 8);
+  /* NO side: shorter, the rest */
+  c.fillRect(47, 19, 9, 26);
+  c.fillRect(36, 19, 20, 8);
+  c.fillRect(36, 37, 20, 8);
+  /* the last price, sitting in the spread */
+  c.fillStyle = acid;
+  c.fillRect(29, 26, 6, 12);
+  c.restore();
+}
+
+/* ---------- C // THE PIVOT ----------
+   One square, one cut. Above the cut is YES, below it is NO, and the acid
+   line is the price that separates them. The angle is the probability. */
+function markPivot(c, x, y, s, inv){
+  const u = s/64, fg = inv ? BLACK : WHITE, frame = inv ? "rgba(8,9,10,.22)" : DIM;
+  const acid = inv ? "#8CB000" : ACID;
+  c.save(); c.translate(x,y); c.scale(u,u); c.lineJoin = "miter";
+  const y0 = 44, y1 = 18;                  /* the cut, leaning with the odds */
+  c.beginPath(); c.moveTo(6,6); c.lineTo(58,6); c.lineTo(58,y1); c.lineTo(6,y0); c.closePath();
+  c.fillStyle = fg; c.fill();
+  c.strokeStyle = frame; c.lineWidth = 1.5; c.strokeRect(6,6,52,52);
+  c.strokeStyle = acid; c.lineWidth = 4;
+  c.beginPath(); c.moveTo(6,y0); c.lineTo(58,y1); c.stroke();
+  c.strokeStyle = inv ? "rgba(8,9,10,.3)" : "rgba(242,239,233,.28)"; c.lineWidth = 1.5;
+  c.beginPath();
+  c.moveTo(6,48); c.lineTo(58,48); c.moveTo(6,54); c.lineTo(58,54);
+  c.stroke();
+  c.restore();
+}
+
+const MARKS = [
+  ["A // THE LEVEL",  "the price, read off a gauge",            markLevel],
+  ["B // THE BOOK",   "two sides of the book, acid is the price", markSpread],
+  ["C // THE PIVOT",  "one square, one cut, YES above NO",      markPivot]
+];
+
+const c = document.getElementById("sheet").getContext("2d");
+
+function T(str, x, y, o){
+  c.save();
+  c.font = `${o.w||500} ${o.s}px ${o.mono ? "'JetBrains Mono',monospace" : "'Inter Tight',sans-serif"}`;
+  if ("letterSpacing" in c) c.letterSpacing = (o.t||0) + "px";
+  c.fillStyle = o.c || WHITE; c.textAlign = o.a || "left";
+  c.fillText(str, x, y); c.restore();
+}
+
+function draw(){
+  c.fillStyle = BLACK; c.fillRect(0,0,1800,1500);
+  T("POLYMARCT // LOGO DIRECTIONS", 70, 80, { s:22, mono:true, t:8, c:"#8A8F94" });
+  T("Three marks, same grid, same probability. Pick one.", 70, 126, { s:34, w:600, t:-1 });
+
+  MARKS.forEach(([name, note, fn], i) => {
+    const y = 210 + i*420;
+    c.strokeStyle = "rgba(242,239,233,.10)"; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(70, y-40); c.lineTo(1730, y-40); c.stroke();
+
+    T(name, 70, y+4, { s:24, mono:true, t:5, c:ACID });
+    T(note, 70, y+40, { s:18, mono:true, t:2, c:"#8A8F94" });
+
+    fn(c, 70, y+70, 240);                                  /* hero size */
+    fn(c, 380, y+70, 240, false);
+    c.fillStyle = WHITE; c.fillRect(360, y+50, 280, 280);   /* on warm white */
+    fn(c, 380, y+70, 240, true);
+
+    fn(c, 700, y+150, 80);                                  /* app icon */
+    T("80PX", 700, y+258, { s:13, mono:true, t:3, c:"#5C6166" });
+
+    fn(c, 820, y+186, 32);                                  /* favicon */
+    T("32", 820, y+258, { s:13, mono:true, t:3, c:"#5C6166" });
+
+    fn(c, 880, y+194, 16);                                  /* minimum */
+    T("16", 880, y+258, { s:13, mono:true, t:3, c:"#5C6166" });
+
+    /* lockup */
+    fn(c, 960, y+140, 96);
+    T("POLYMARCT", 1084, y+218, { s:78, w:600, t:-4 });
+    T("THE LEADING PREDICTION MARKET ON ARC", 1088, y+256, { s:15, mono:true, t:4.6, c:"#8A8F94" });
+  });
+  T("RENDERED AT EXPORT RESOLUTION // NOTHING HERE IS A SKETCH", 70, 1460, { s:16, mono:true, t:5, c:"#5C6166" });
+}
+
+document.fonts.ready.then(async () => {
+  draw();
+  const b = await new Promise(r => document.getElementById("sheet").toBlob(r, "image/png"));
+  try { await fetch("/_save/logo-lab.png", { method:"POST", body:b }); } catch(e){}
+  window.__ready = true;
+});
+</script>
+</body>
+</html>

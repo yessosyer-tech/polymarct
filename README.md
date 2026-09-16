@@ -42,6 +42,10 @@ python -m http.server 8080
 - `assets/js/ui.js` — header, footer, market card, sparkline, ticker, modals, toasts, terminal mode
 - `assets/js/field.js` — the hero live market field canvas
 
+## Content pack
+
+`content/` holds 38 PNGs for social: signal cards from live markets, hook cards, explainers, stat cards, portrait cuts and the profile kit, plus `CONTENT-PLAN.md` with the posting rhythm, the caption formulas and the rules. Regenerate with `/brand/export.html` and `EXPORT.all()`.
+
 ## Video files
 
 Finished MP4s live in `dist/`: the trailer at 1080p60 with its score, plus vertical, square and a small share cut, and the three product films at 1080p30, silent.
@@ -54,7 +58,7 @@ USDC on Arc is the only asset the product accepts: collateral, trades, fees, bon
 
 ## Brand
 
-The mark is **the split unit**: one square is one unit of probability, and the stepped boundary running through it is the price that separates the YES mass from the NO void. Warm white mass, acid price line, a bid ladder on the NO side, and a small square straddling the boundary as the last print. It animates by repricing itself. Logo pack in `brand/logo/`, geometry mirrored in `assets/js/ui.js`, `brand/brand-render.js` and `brand/motion/motion.js`.
+The mark is **the book**: two sides of the order book facing each other, the taller bracket holding the weight of the money, the shorter one the other outcome, and the acid bar standing in the gap between them as the last price. Acid is the price and never a field. It animates by repricing itself. Logo pack in `brand/logo/`, geometry mirrored in `assets/js/ui.js`, `brand/brand-render.js` and `brand/motion/motion.js`.
 
 The 30 second trailer cuts on a 120 BPM grid with a score synthesised in the page and a voice-over on timed cues; drop `brand/motion/audio/vo.mp3` in and a real recording takes over from the browser scratch voice. Script and timecodes in `brand/motion/TRAILER-VO.md`. The three product films run on a deterministic timeline at 1920x1080, so a screen recording is repeatable rather than a lucky take. Add `?rec=1` for a clean plate, `&t=6` to seek, `&pause=1` to hold a frame.
 

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CONTENT EXPORT // POLYMARCT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/polymarct.css">
+<style>#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}#grid canvas{width:100%;border:1px solid var(--line)}</style>
+</head>
+<body>
+<section class="sec sec--flush"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>CONTENT EXPORT</div>
+  <h1 class="display--sm" style="margin-top:14px">The whole pack,<br>one pass.</h1>
+  <p class="lede" style="margin-top:16px">Renders every content image at export resolution and writes it to disk through the dev server. Run <span class="mono acid">EXPORT.all()</span> in the console.</p>
+  <div id="grid" style="margin-top:28px"></div>
+</div></section>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/engine.js"></script>
+<script src="brand-render.js"></script>
+<script>
+/* POLYMARCT / content pack
+   Everything here is drawn from live market state with the same primitives the
+   product uses, so a post is a screenshot of the real thing rather than an
+   illustration of it. 16:9 for the timeline, 4:5 for feed footprint. */
+
+const T = BRAND.text, W = BRAND.wrap, HX = BRAND.hexa;
+const TH = BRAND.THEMES.black;
+const ACID = "#CCFF00", WHITE = "#F2EFE9", DIM = "#8A8F94", NO = "#FF4D2E";
+const SIG = "$PMARC // ON ARC";
+
+const HOOKS = [
+  "The future doesn't announce itself. It moves.",
+  "Consensus is cheap. Conviction is expensive.",
+  "Everyone has an opinion. Only the market has a price.",
+  "The headline comes later. The price moves first.",
+  "You're early. The market isn't.",
+  "One question. Two outcomes. Infinite information.",
+  "You think you know. The market disagrees.",
+  "Don't predict it. Price it.",
+  "The crowd has a number. Do you agree?",
+  "Before the headline, there is a market."
+];
+
+const EXPLAINERS = [
+  ["HOW A MARKET WORKS", [
+    ["01", "A question with one answer", "Yes or no, a deadline, nothing subjective"],
+    ["02", "A price you can trade", "67 cents to take YES, 33 to take NO"],
+    ["03", "A source fixed up front", "Named before trading opens, never changed after"],
+    ["04", "A payout of one dollar", "Winning shares settle at $1 in USDC on Arc"]
+  ]],
+  ["THE LOOP", [
+    ["01", "Discover", "Find a question worth having an opinion about"],
+    ["02", "Trade", "Take the side you believe, at the price on screen"],
+    ["03", "Follow", "Watch the probability move against you or with you"],
+    ["04", "Resolve", "Reality decides, the engine records it"],
+    ["05", "Settle", "The winning side is paid, in USDC on Arc"]
+  ]],
+  ["THE VERDICT ENGINE", [
+    ["01", "Pre committed source", "Named and hashed before a single trade"],
+    ["02", "Published evidence", "The raw reading sits next to the verdict"],
+    ["03", "Bonded dispute window", "24 hours, open to anyone holding a position"],
+    ["04", "Void beats wrong", "No answer is better than a wrong answer"]
+  ]],
+  ["ONE ASSET, ONE CHAIN", [
+    ["USDC", "Collateral, fees, payouts", "The unit you trade in is the unit you are paid in"],
+    ["ARC", "Settlement", "Stablecoin native, fast deterministic finality"],
+    ["NO", "Bridges, swaps, second tokens", "Nothing else is accepted anywhere in the product"],
+    ["NO", "Need to hold $PMARC", "The token is not a payment asset"]
+  ]],
+  ["THE CONVICTION INDEX", [
+    ["IN", "Resolved positions only", "Open bets score nothing at all"],
+    ["IN", "Risk adjusted return", "Return per unit of variance, across categories"],
+    ["OUT", "Raw volume", "Size is not skill, and rewarding it pays wash traders"],
+    ["OUT", "Sybil clusters", "Funding graph clustering, self matched flow discarded"]
+  ]],
+  ["WHY ARC", [
+    ["01", "Fees priced in USDC", "A market that reprices all day cannot pay volatile gas"],
+    ["02", "One unit of account", "No basis risk between the price and the payout"],
+    ["03", "Deterministic finality", "Settled means settled, resolution is not reorg bait"],
+    ["04", "Built for it", "Prediction markets are in Arc's own design brief"]
+  ]]
+];
+
+/* ---------- shared furniture ---------- */
+function ground(c, w, h, seed, density){
+  c.fillStyle = TH.bg; c.fillRect(0,0,w,h);
+  BRAND.field(c, w, h, seed, TH, density === undefined ? .7 : density);
+  BRAND.vignette(c, w, h, TH);
+}
+function eyebrow(c, x, y, label, size){
+  c.beginPath(); c.arc(x+size*.3, y-size*.32, size*.3, 0, 7); c.fillStyle = ACID; c.fill();
+  T(c, label, x+size*1.2, y, { size, mono:true, track:size*.24, color:DIM });
+}
+function footer(c, w, h, pad, note){
+  BRAND.mark(c, pad, h-pad-46, 46, TH);
+  T(c, "POLYMARCT", pad+62, h-pad-12, { size:30, weight:600, track:-1, color:WHITE });
+  const s = note || SIG;
+  c.textAlign = "right";
+  T(c, s, w-pad, h-pad-12, { size:19, mono:true, track:4, color:DIM });
+  c.textAlign = "left";
+}
+function rule(c, x, y, w, a){ c.fillStyle = HX(WHITE, a||.16); c.fillRect(x,y,w,1); }
+function probBar(c, x, y, w, h, p){
+  c.fillStyle = HX(WHITE,.12); c.fillRect(x,y,w,h);
+  c.fillStyle = ACID; c.fillRect(x,y,w*p,h);
+}
+function spark(c, m, x, y, w, h){
+  const pts = m.hist.slice(-48), mn = Math.min(...pts), mx = Math.max(...pts), rg = (mx-mn)||.01;
+  c.beginPath();
+  pts.forEach((p,i)=>{ const px = x + (i/(pts.length-1))*w, py = y + h - ((p-mn)/rg)*h;
+    i ? c.lineTo(px,py) : c.moveTo(px,py); });
+  c.strokeStyle = ACID; c.lineWidth = 3; c.stroke();
+  const lx = x+w, ly = y + h - ((pts[pts.length-1]-mn)/rg)*h;
+  c.beginPath(); c.arc(lx, ly, 6, 0, 7); c.fillStyle = ACID; c.fill();
+}
+
+/* ---------- card types ---------- */
+function cardSignal(c, w, h, m){
+  const pad = Math.round(w*0.055);
+  ground(c, w, h, m.id+"sig", .5);
+  eyebrow(c, pad, pad+34, "POLYMARCT SIGNAL", 20);
+  c.textAlign = "right";
+  T(c, m.cat, w-pad, pad+34, { size:20, mono:true, track:4.4, color:DIM });
+  c.textAlign = "left";
+  rule(c, pad, pad+60, w-pad*2, .18);
+
+  const qs = w > h ? 54 : 60;
+  W(c, m.q, w-pad*2, { size:qs, weight:500, track:-2 }).slice(0,3)
+    .forEach((l,i)=> T(c, l, pad, pad+150+i*qs*1.08, { size:qs, weight:500, track:-2, color:WHITE }));
+
+  const bigY = h*0.66;
+  const pct = Math.round(m.yes*100)+"%";
+  T(c, pct, pad, bigY, { size:Math.round(h*0.30), weight:600, track:-h*0.017, color:WHITE });
+  c.font = `600 ${Math.round(h*0.30)}px 'Inter Tight',sans-serif`;
+  const pw = c.measureText(pct).width;
+  T(c, "YES", pad+pw+26, bigY, { size:34, mono:true, track:8, color:DIM });
+  T(c, PM.fmt.signed(m.d24), pad+pw+26, bigY-Math.round(h*0.30)*0.42,
+    { size:40, weight:600, track:-1, color: m.d24>=0?ACID:NO });
+
+  spark(c, m, w*0.62, bigY-Math.round(h*0.22), w*0.32, Math.round(h*0.18));
+
+  probBar(c, pad, bigY+40, w-pad*2, 10, m.yes);
+  T(c, "YES " + PM.fmt.cents(m.yes), pad, bigY+86, { size:22, mono:true, track:4, color:ACID });
+  c.textAlign = "right";
+  T(c, "NO " + PM.fmt.cents(1-m.yes), w-pad, bigY+86, { size:22, mono:true, track:4, color:DIM });
+  c.textAlign = "left";
+
+  T(c, PM.fmt.usd(m.vol) + " VOLUME   //   " + PM.fmt.n(m.traders) + " TRADERS   //   " + PM.fmt.left(m.ends) + " LEFT",
+    pad, bigY+134, { size:20, mono:true, track:2.6, color:DIM });
+
+  footer(c, w, h, pad);
+}
+
+function cardHook(c, w, h, hook){
+  const pad = Math.round(w*0.055);
+  ground(c, w, h, hook.slice(0,10), .38);
+  eyebrow(c, pad, pad+34, "POLYMARCT", 20);
+  rule(c, pad, pad+60, w-pad*2, .18);
+  const size = w > h ? Math.round(w*0.062) : Math.round(w*0.082);
+  const ls = W(c, hook, w-pad*2, { size, weight:600, track:-size*0.045 });
+  const startY = h*0.5 - (ls.length-1)*size*0.52 + size*0.2;
+  ls.forEach((l,i)=> T(c, l, pad, startY + i*size*1.02, { size, weight:600, track:-size*0.045, color:WHITE }));
+  footer(c, w, h, pad);
+}
+
+function cardExplainer(c, w, h, title, rows){
+  const pad = Math.round(w*0.055);
+  ground(c, w, h, title, .3);
+  eyebrow(c, pad, pad+34, "HOW IT WORKS", 20);
+  rule(c, pad, pad+60, w-pad*2, .18);
+  T(c, title, pad, pad+150, { size:Math.round(w*0.052), weight:600, track:-2.6, color:WHITE });
+  let y = pad + 230;
+  const gap = Math.min(96, (h - y - pad*2.4) / rows.length);
+  rows.forEach(([n, head, note]) => {
+    T(c, n, pad, y, { size:22, mono:true, track:3, color:ACID });
+    T(c, head, pad+120, y, { size:32, weight:600, track:-1, color:WHITE });
+    c.textAlign = "right";
+    T(c, note, w-pad, y, { size:21, mono:true, track:1.6, color:DIM });
+    c.textAlign = "left";
+    rule(c, pad, y+22, w-pad*2, .10);
+    y += gap;
+  });
+  footer(c, w, h, pad);
+}
+
+function cardIndex(c, w, h){
+  const pad = Math.round(w*0.055);
+  const fi = PM.futureIndex();
+  ground(c, w, h, "futureindex", .4);
+  eyebrow(c, pad, pad+34, "THE FUTURE INDEX", 20);
+  rule(c, pad, pad+60, w-pad*2, .18);
+  T(c, fi.value.toFixed(1), pad, h*0.62, { size:Math.round(h*0.40), weight:600, track:-h*0.024, color:WHITE });
+  c.font = `600 ${Math.round(h*0.40)}px 'Inter Tight',sans-serif`;
+  const vw = c.measureText(fi.value.toFixed(1)).width;
+  T(c, (fi.delta>=0?"+":"") + fi.delta.toFixed(1) + "%", pad+vw+30, h*0.62,
+    { size:46, weight:600, track:-1, color: fi.delta>=0?ACID:NO });
+  W(c, "Aggregate confidence across ten markets in crypto, technology and macro. A visual information metric, not an investment product.",
+    w-pad*2, { size:24, mono:true, track:1.4 }).slice(0,3)
+    .forEach((l,i)=> T(c, l, pad, h*0.62+70+i*38, { size:24, mono:true, track:1.4, color:DIM }));
+  footer(c, w, h, pad);
+}
+
+function cardThemes(c, w, h){
+  const pad = Math.round(w*0.055);
+  const th = PM.themeReads();
+  ground(c, w, h, "themes", .3);
+  eyebrow(c, pad, pad+34, "WHAT THE WORLD THINKS", 20);
+  rule(c, pad, pad+60, w-pad*2, .18);
+  T(c, "The market's read,", pad, pad+150, { size:Math.round(w*0.05), weight:600, track:-2.4, color:WHITE });
+  T(c, "by theme.", pad, pad+150+Math.round(w*0.05)*0.98, { size:Math.round(w*0.05), weight:600, track:-2.4, color:WHITE });
+  let y = pad + 300;
+  const gap = Math.min(86, (h - y - pad*2.4) / th.length);
+  th.forEach(t => {
+    T(c, t.name, pad, y, { size:30, weight:600, track:-1, color:WHITE });
+    const bx = pad + 360, bw = w - pad*2 - 360 - 260;
+    c.fillStyle = HX(WHITE,.12); c.fillRect(bx, y-14, bw, 10);
+    c.fillStyle = t.read === "Bearish" ? NO : ACID; c.fillRect(bx, y-14, bw*t.value, 10);
+    c.textAlign = "right";
+    T(c, t.read.toUpperCase() + "  " + Math.round(t.value*100) + "%", w-pad, y,
+      { size:24, mono:true, track:2, color: t.read==="Bearish"?NO : t.read==="Neutral"?DIM:ACID });
+    c.textAlign = "left";
+    y += gap;
+  });
+  footer(c, w, h, pad);
+}
+
+function cardBoard(c, w, h){
+  const pad = Math.round(w*0.055);
+  ground(c, w, h, "board", .35);
+  eyebrow(c, pad, pad+34, "LIVE RIGHT NOW", 20);
+  rule(c, pad, pad+60, w-pad*2, .18);
+  const ms = PM.sorted("moving").slice(0, h > w ? 7 : 5);
+  let y = pad + 150;
+  const gap = (h - y - pad*2.6) / ms.length;
+  ms.forEach(m => {
+    W(c, m.q, w-pad*2-300, { size:30, weight:500, track:-1 }).slice(0,1)
+      .forEach(l => T(c, l, pad, y, { size:30, weight:500, track:-1, color:WHITE }));
+    c.textAlign = "right";
+    T(c, Math.round(m.yes*100)+"%", w-pad-170, y, { size:38, weight:600, track:-1.4, color:WHITE });
+    T(c, PM.fmt.signed(m.d24), w-pad, y, { size:26, mono:true, track:1.6, color: m.d24>=0?ACID:NO });
+    c.textAlign = "left";
+    c.fillStyle = HX(WHITE,.10); c.fillRect(pad, y+20, w-pad*2, 1);
+    c.fillStyle = ACID; c.fillRect(pad, y+20, (w-pad*2)*m.yes, 2);
+    y += gap;
+  });
+  footer(c, w, h, pad);
+}
+
+function profileHeader(c, w, h){
+  ground(c, w, h, "xheader", .8);
+  BRAND.mark(c, 300, 120, 64, TH);
+  T(c, "POLYMARCT", 386, 176, { size:60, weight:600, track:-2.6, color:WHITE });
+  T(c, "THE FUTURE HAS A PRICE.", 300, 268, { size:36, weight:600, track:-1, color:WHITE });
+  T(c, "PREDICTION MARKETS ON ARC  //  SETTLES IN USDC", 300, 318, { size:19, mono:true, track:4.4, color:ACID });
+  rule(c, 300, 366, w-600, .18);
+  const ms = PM.sorted("moving").slice(0,4);
+  let x = 300;
+  ms.forEach(m => {
+    const lab = m.q.replace(/^Will\s+/,"").slice(0,22).toUpperCase();
+    T(c, lab, x, 412, { size:15, mono:true, track:2, color:DIM });
+    c.font = "500 15px 'JetBrains Mono',monospace";
+    x += c.measureText(lab).width + 16;
+    T(c, Math.round(m.yes*100)+"%", x, 412, { size:15, mono:true, track:2, color:WHITE });
+    x += 52;
+  });
+}
+
+function profileAvatar(c, w, h){
+  c.fillStyle = TH.bg; c.fillRect(0,0,w,h);
+  BRAND.field(c, w, h, "avatar", TH, .5);
+  BRAND.vignette(c, w, h, TH);
+  BRAND.mark(c, w*0.5 - w*0.31, h*0.5 - h*0.31, w*0.62, TH);
+}
+
+/* ---------- the manifest ---------- */
+const X = { w:1600, h:900 }, P45 = { w:1080, h:1350 };
+function manifest(){
+  const items = [];
+  const movers = PM.sorted("moving").slice(0,6);
+  const arc = PM.state.markets.filter(m=>m.cat==="ARC").slice(0,2);
+  [...movers, ...arc].forEach((m,i) =>
+    items.push({ name:`signal-${String(i+1).padStart(2,"0")}-${m.id}`, ...X, draw:c=>cardSignal(c,X.w,X.h,m) }));
+  HOOKS.forEach((hk,i) =>
+    items.push({ name:`hook-${String(i+1).padStart(2,"0")}`, ...X, draw:c=>cardHook(c,X.w,X.h,hk) }));
+  EXPLAINERS.forEach(([t,rows],i) =>
+    items.push({ name:`explainer-${String(i+1).padStart(2,"0")}`, ...X, draw:c=>cardExplainer(c,X.w,X.h,t,rows) }));
+  items.push({ name:"stat-future-index", ...X, draw:c=>cardIndex(c,X.w,X.h) });
+  items.push({ name:"stat-what-the-world-thinks", ...X, draw:c=>cardThemes(c,X.w,X.h) });
+  items.push({ name:"stat-live-board", ...X, draw:c=>cardBoard(c,X.w,X.h) });
+  /* portrait, for feed footprint */
+  movers.slice(0,4).forEach((m,i) =>
+    items.push({ name:`portrait-signal-${String(i+1).padStart(2,"0")}`, ...P45, draw:c=>cardSignal(c,P45.w,P45.h,m) }));
+  HOOKS.slice(0,4).forEach((hk,i) =>
+    items.push({ name:`portrait-hook-${String(i+1).padStart(2,"0")}`, ...P45, draw:c=>cardHook(c,P45.w,P45.h,hk) }));
+  items.push({ name:"portrait-board", ...P45, draw:c=>cardBoard(c,P45.w,P45.h) });
+  /* profile kit */
+  items.push({ name:"profile-header-1500x500", w:1500, h:500, draw:c=>profileHeader(c,1500,500) });
+  items.push({ name:"profile-avatar-400", w:400, h:400, draw:c=>profileAvatar(c,400,400) });
+  return items;
+}
+
+const EXPORT = {
+  async all(preview){
+    await document.fonts.ready;
+    const items = manifest();
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    let n = 0;
+    for (const it of items){
+      const cv = document.createElement("canvas");
+      cv.width = it.w; cv.height = it.h;
+      const c = cv.getContext("2d");
+      it.draw(c);
+      BRAND.grain(c, it.w, it.h, 12);
+      if (preview) grid.appendChild(cv);
+      if (!preview){
+        const b = await new Promise(r => cv.toBlob(r, "image/png"));
+        for (let a=0;a<4;a++){
+          try { const r = await fetch("/_save/" + it.name + ".png", { method:"POST", body:b }); if (r.ok) break; }
+          catch(e){ await new Promise(r=>setTimeout(r,250*(a+1))); }
+        }
+      }
+      n++;
+      window.__export = { done:n, total:items.length, last:it.name };
+    }
+    return window.__export;
+  },
+  manifest
+};
+window.EXPORT = EXPORT;
+EXPORT.all(true);
+</script>
+</body>
+</html>

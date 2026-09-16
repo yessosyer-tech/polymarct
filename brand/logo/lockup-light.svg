@@ -1,11 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 128" width="560" height="128" role="img" aria-label="Polymarct">
   <rect width="560" height="128" fill="#F2EFE9"/>
   <g transform="translate(24 32)">
-    <rect x="6" y="6" width="52" height="52" fill="none" stroke="rgba(8,9,10,.24)" stroke-width="1.5"/>
-    <path d="M6 6H30V20H44V32H22V44H38V58H6Z" fill="#08090A"/>
-    <g stroke="rgba(8,9,10,.30)" stroke-width="1.5"><path d="M36 13H58M50 26H58M28 38H58M44 51H58"/></g>
-    <path d="M30 6V20H44V32H22V44H38V58" fill="none" stroke="#8CB000" stroke-width="2.5"/>
-    <rect x="34" y="40" width="8" height="8" fill="none" stroke="#8CB000" stroke-width="2"/>
+    <rect x="8" y="7" width="9" height="50" fill="#08090A"/>
+    <rect x="8" y="7" width="20" height="8" fill="#08090A"/>
+    <rect x="8" y="49" width="20" height="8" fill="#08090A"/>
+    <rect x="47" y="19" width="9" height="26" fill="#08090A"/>
+    <rect x="36" y="19" width="20" height="8" fill="#08090A"/>
+    <rect x="36" y="37" width="20" height="8" fill="#08090A"/>
+    <rect x="29" y="26" width="6" height="12" fill="#8CB000"/>
   </g>
   <text x="168" y="72" font-family="'Inter Tight','Inter','Helvetica Neue',Arial,sans-serif" font-size="48" font-weight="600" letter-spacing="-2.6" fill="#08090A">POLYMARCT</text>
   <text x="168" y="94" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="11.5" letter-spacing="3.6" fill="#08090A" opacity=".6">THE FUTURE HAS A PRICE.</text>

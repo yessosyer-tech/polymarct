@@ -160,37 +160,28 @@ const MO = (() => {
     }
   }
 
-  /* THE SPLIT UNIT, drawn on canvas with a live boundary */
+  /* THE BOOK, drawn on canvas: two sides and the price between them */
   const EDGE = [[30,6],[30,20],[44,20],[44,32],[22,32],[22,44],[38,44],[38,58]];
   function markPath(shift){
     return EDGE.map(([x,y],i) => [x + (i%2 ? 0 : 0) + shift*((i%4<2)?1:-1)*0.5 + shift, y]);
   }
-  function drawMark(ctx, x, y, s, { draw = 1, shift = 0, acid = "#CCFF00", fg = "#F2EFE9", bg = "#08090A", frame = .24 } = {}){
-    const u = s/64, pts = markPath(shift);
+  function drawMark(ctx, x, y, s, { draw = 1, shift = 0, acid = "#CCFF00", fg = "#F2EFE9" } = {}){
+    const u = s/64, k = Math.max(0, Math.min(1, draw));
     ctx.save(); ctx.translate(x,y); ctx.scale(u,u);
-    ctx.lineJoin = "miter";
-    ctx.strokeStyle = `rgba(242,239,233,${frame})`; ctx.lineWidth = 1.5;
-    ctx.strokeRect(6,6,52,52);
-    if (draw > 0){
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0, 0, 64, 6 + 52*draw); ctx.clip();
-      ctx.beginPath(); ctx.moveTo(6,6);
-      pts.forEach(([px,py])=>ctx.lineTo(px,py));
-      ctx.lineTo(6,58); ctx.closePath();
-      ctx.fillStyle = fg; ctx.fill();
-      ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]);
-      pts.slice(1).forEach(([px,py])=>ctx.lineTo(px,py));
-      ctx.strokeStyle = acid; ctx.lineWidth = 2.5; ctx.stroke();
-      ctx.restore();
+    ctx.fillStyle = fg;
+    /* the two sides grow in from their own edges as the mark builds */
+    const yesH = 50*k, noH = 26*k;
+    ctx.fillRect(8, 7 + (50-yesH)/2, 9, yesH);
+    if (k > .35){
+      ctx.fillRect(8, 7 + (50-yesH)/2, 20, 8);
+      ctx.fillRect(8, 49 - (50-yesH)/2, 20, 8);
     }
-    ctx.strokeStyle = "rgba(242,239,233,.42)"; ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(36,13); ctx.lineTo(58,13);
-    ctx.moveTo(50,26); ctx.lineTo(58,26);
-    ctx.moveTo(28,38); ctx.lineTo(58,38);
-    ctx.moveTo(44,51); ctx.lineTo(58,51);
-    ctx.stroke();
-    if (draw > .7){ ctx.strokeStyle = acid; ctx.lineWidth = 2; ctx.strokeRect(34+shift,40,8,8); }
+    ctx.fillRect(47, 19 + (26-noH)/2, 9, noH);
+    if (k > .35){
+      ctx.fillRect(36, 19 + (26-noH)/2, 20, 8);
+      ctx.fillRect(36, 37 - (26-noH)/2, 20, 8);
+    }
+    if (k > .7){ ctx.fillStyle = acid; ctx.fillRect(29, 26 + shift, 6, 12); }
     ctx.restore();
   }
 

@@ -125,36 +125,17 @@ const BRAND = (() => {
   }
 
   /* ---------- components ---------- */
-  /* THE SPLIT UNIT. One square is one unit of probability. The boundary
-     between the YES mass and the NO void is the price path. */
+  /* THE BOOK. Two sides of the order book facing each other; the acid bar
+     standing in the gap between them is the last price. */
   const EDGE = [[30,6],[30,20],[44,20],[44,32],[22,32],[22,44],[38,44],[38,58]];
 
   function mark(ctx, x, y, s, t){
     const u = s/64;
     ctx.save(); ctx.translate(x,y); ctx.scale(u,u);
-    ctx.lineJoin = "miter"; ctx.lineCap = "butt";
-
-    ctx.strokeStyle = hexa(t.fg,.24); ctx.lineWidth = 1.5;
-    ctx.strokeRect(6,6,52,52);
-
-    ctx.beginPath(); ctx.moveTo(6,6);
-    EDGE.forEach(([px,py])=>ctx.lineTo(px,py));
-    ctx.lineTo(6,58); ctx.closePath();
-    ctx.fillStyle = t.fg; ctx.fill();
-
-    ctx.beginPath(); ctx.moveTo(EDGE[0][0],EDGE[0][1]);
-    EDGE.slice(1).forEach(([px,py])=>ctx.lineTo(px,py));
-    ctx.strokeStyle = t.acc; ctx.lineWidth = 2.5; ctx.stroke();
-
-    ctx.strokeStyle = hexa(t.fg,.42); ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(36,13); ctx.lineTo(58,13);
-    ctx.moveTo(50,26); ctx.lineTo(58,26);
-    ctx.moveTo(28,38); ctx.lineTo(58,38);
-    ctx.moveTo(44,51); ctx.lineTo(58,51);
-    ctx.stroke();
-
-    ctx.strokeStyle = t.acc; ctx.lineWidth = 2; ctx.strokeRect(34,40,8,8);   // the last print, straddling the edge
+    ctx.fillStyle = t.fg;
+    [[8,7,9,50],[8,7,20,8],[8,49,20,8],[47,19,9,26],[36,19,20,8],[36,37,20,8]]
+      .forEach(([rx,ry,rw,rh]) => ctx.fillRect(rx,ry,rw,rh));
+    ctx.fillStyle = t.acc; ctx.fillRect(29,26,6,12);   // the last price, in the spread
     ctx.restore();
   }
 

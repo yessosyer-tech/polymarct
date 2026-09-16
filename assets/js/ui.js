@@ -14,12 +14,16 @@ const UI = (() => {
 
   /* THE SPLIT UNIT: one square is one unit of probability, and the boundary
      between the YES mass and the NO void is the price path itself. */
-  const GLYPH = `<svg class="glyph" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="width:19px;height:19px;flex:none">
-    <rect x="6" y="6" width="52" height="52" stroke="rgba(242,239,233,.22)" stroke-width="1.5"/>
-    <path d="M6 6H30V20H44V32H22V44H38V58H6Z" fill="var(--white)"/>
-    <g stroke="rgba(242,239,233,.34)" stroke-width="1.5"><path d="M36 13H58M50 26H58M28 38H58M44 51H58"/></g>
-    <path d="M30 6V20H44V32H22V44H38V58" stroke="var(--acid)" stroke-width="2.5"/>
-    <rect x="34" y="40" width="8" height="8" stroke="var(--acid)" stroke-width="2"/>
+  const GLYPH = `<svg class="glyph" viewBox="0 0 64 64" aria-hidden="true" style="width:19px;height:19px;flex:none">
+    <g fill="currentColor">
+    <rect x="8" y="7" width="9" height="50" fill="currentColor"/>
+    <rect x="8" y="7" width="20" height="8" fill="currentColor"/>
+    <rect x="8" y="49" width="20" height="8" fill="currentColor"/>
+    <rect x="47" y="19" width="9" height="26" fill="currentColor"/>
+    <rect x="36" y="19" width="20" height="8" fill="currentColor"/>
+    <rect x="36" y="37" width="20" height="8" fill="currentColor"/>
+    </g>
+    <rect x="29" y="26" width="6" height="12" fill="var(--acid)"/>
   </svg>`;
 
   function header(active) {

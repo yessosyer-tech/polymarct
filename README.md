@@ -42,6 +42,15 @@ python -m http.server 8080
 - `assets/js/ui.js` — header, footer, market card, sparkline, ticker, modals, toasts, terminal mode
 - `assets/js/field.js` — the hero live market field canvas
 
+## PNG is the house format
+
+Every image asset ships as PNG, and that is the standing rule for anything added later: icons, marks, lockups, wordmarks, the link preview and the whole social pack. PNG opens anywhere, holds the acid exactly and needs no renderer. The SVG set stays in `brand/logo/` for print and for the web, but nothing on the site depends on it.
+
+- `brand/logo/png/` — mark at 16 to 1024 transparent, on graphite and on warm white, one colour versions, lockups and wordmarks. Rebuild with `/brand/export-logo.html` and `LOGOS.all()`.
+- `assets/icons/` — favicon 16/32/48, apple touch 180, 192 and 512. Declared on every page.
+- `assets/og-image.png` — 1200x630 link preview, wired as `og:image` and `twitter:image`.
+- `content/` — the social pack, see below.
+
 ## Content pack
 
 `content/` holds 38 PNGs for social: signal cards from live markets, hook cards, explainers, stat cards, portrait cuts and the profile kit, plus `CONTENT-PLAN.md` with the posting rhythm, the caption formulas and the rules. Regenerate with `/brand/export.html` and `EXPORT.all()`.

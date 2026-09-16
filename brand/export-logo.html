@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LOGO EXPORT // POLYMARCT</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/polymarct.css">
+<style>#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+#grid figure{margin:0;border:1px solid var(--line);padding:10px;background:
+  repeating-conic-gradient(#1a1d20 0 25%,#141618 0 50%) 0 0/16px 16px}
+#grid canvas{width:100%;display:block}#grid figcaption{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dim);margin-top:8px}</style>
+</head>
+<body>
+<section class="sec sec--flush"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>LOGO EXPORT</div>
+  <h1 class="display--sm" style="margin-top:14px">Every mark,<br>as a PNG.</h1>
+  <p class="lede" style="margin-top:16px">PNG is the house format: it opens anywhere, it keeps the acid exact, and it needs no renderer. SVG stays in the repo for print and for the web, but every asset ships as PNG too. Run <span class="mono acid">LOGOS.all()</span> to write them.</p>
+  <div id="grid" style="margin-top:28px"></div>
+</div></section>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/engine.js"></script>
+<script src="brand-render.js"></script>
+<script>
+/* POLYMARCT / logo and icon export
+   THE BOOK drawn at every size anyone will ask for, on black, on warm white
+   and on nothing at all. Transparent versions carry no ground, so they drop
+   onto a deck slide or a sponsor bar without a box around them. */
+
+const ACID = "#CCFF00", WHITE = "#F2EFE9", BLACK = "#08090A", OLIVE = "#8CB000", DIM = "#8A8F94";
+const T = BRAND.text;
+
+const TH_DARK  = Object.assign({}, BRAND.THEMES.black);
+const TH_WARM  = Object.assign({}, BRAND.THEMES.warm, { fg: BLACK, acc: OLIVE });
+const TH_MONO_W = Object.assign({}, BRAND.THEMES.black, { fg: WHITE, acc: WHITE });
+const TH_MONO_B = Object.assign({}, BRAND.THEMES.black, { fg: BLACK, acc: BLACK });
+
+function frame(c, w, h, bg){
+  c.clearRect(0,0,w,h);
+  if (bg){ c.fillStyle = bg; c.fillRect(0,0,w,h); }
+}
+
+/* the mark, centred with one bar height of clear space */
+function markTile(c, size, theme, bg){
+  frame(c, size, size, bg);
+  const s = size * 0.72, o = (size - s)/2;
+  BRAND.mark(c, o, o, s, theme);
+}
+
+/* the mark with no padding at all, for favicons where every pixel counts */
+function markTight(c, size, theme, bg){
+  frame(c, size, size, bg);
+  BRAND.mark(c, -size*0.09, -size*0.09, size*1.18, theme);
+}
+
+function lockup(c, w, h, theme, bg){
+  frame(c, w, h, bg);
+  const s = h * 0.46, x = h * 0.30, y = (h - s)/2 - h*0.04;
+  BRAND.mark(c, x, y, s, theme);
+  T(c, "POLYMARCT", x + s*1.42, y + s*0.82, { size:s*0.76, weight:600, track:-s*0.04, color:theme.fg });
+  T(c, "THE LEADING PREDICTION MARKET ON ARC", x + s*1.45, y + s*1.22,
+    { size:s*0.185, mono:true, track:s*0.055, color: theme === TH_WARM ? "#5C6166" : DIM });
+}
+
+function wordmark(c, w, h, fg, bg){
+  frame(c, w, h, bg);
+  T(c, "POLYMARCT", w*0.03, h*0.72, { size:h*0.62, weight:600, track:-h*0.032, color:fg });
+}
+
+/* the link preview card, the one asset that was still missing */
+function ogCard(c, w, h){
+  const m = PM.get("btc-125k");
+  c.fillStyle = BLACK; c.fillRect(0,0,w,h);
+  BRAND.field(c, w, h, "ogcard", TH_DARK, .55);
+  BRAND.vignette(c, w, h, TH_DARK);
+  const pad = 72;
+  BRAND.mark(c, pad, pad, 52, TH_DARK);
+  T(c, "POLYMARCT", pad+70, pad+40, { size:34, weight:600, track:-1.4, color:WHITE });
+  T(c, "THE FUTURE", pad, 330, { size:108, weight:600, track:-5.6, color:WHITE });
+  T(c, "HAS A PRICE.", pad, 430, { size:108, weight:600, track:-5.6, color:WHITE });
+  c.fillStyle = "rgba(242,239,233,.2)"; c.fillRect(pad, 474, 420, 1);
+  T(c, "THE LEADING PREDICTION MARKET ON ARC", pad, 520, { size:19, mono:true, track:4.6, color:DIM });
+  T(c, "SETTLES IN USDC ON ARC", pad, 560, { size:19, mono:true, track:4.6, color:ACID });
+  /* a real market, priced, on the right */
+  const bx = w - 400;
+  c.fillStyle = "rgba(242,239,233,.05)"; c.fillRect(bx-30, 150, 360, 330);
+  c.strokeStyle = "rgba(242,239,233,.18)"; c.lineWidth = 1; c.strokeRect(bx-30.5, 149.5, 360, 330);
+  BRAND.wrap(c, m.q.toUpperCase(), 300, { size:16, mono:true, track:2 }).slice(0,3)
+    .forEach((l,i)=> T(c, l, bx, 196+i*25, { size:16, mono:true, track:2, color:DIM }));
+  T(c, Math.round(m.yes*100)+"%", bx, 350, { size:112, weight:600, track:-5, color:WHITE });
+  T(c, "YES", bx, 392, { size:22, mono:true, track:6, color:DIM });
+  c.fillStyle = "rgba(242,239,233,.12)"; c.fillRect(bx, 414, 300, 8);
+  c.fillStyle = ACID; c.fillRect(bx, 414, 300*m.yes, 8);
+  T(c, PM.fmt.usd(m.vol) + " VOLUME", bx, 456, { size:16, mono:true, track:2, color:DIM });
+  BRAND.grain(c, w, h, 11);
+}
+
+const ITEMS = [];
+const add = (name, w, h, draw) => ITEMS.push({ name, w, h, draw });
+
+/* marks, transparent */
+[16,32,48,64,128,256,512,1024].forEach(s =>
+  add(`mark-${s}`, s, s, c => markTile(c, s, TH_DARK, null)));
+/* marks on the brand ground */
+[64,256,512,1024].forEach(s =>
+  add(`mark-on-black-${s}`, s, s, c => markTile(c, s, TH_DARK, BLACK)));
+[64,256,512,1024].forEach(s =>
+  add(`mark-on-warm-${s}`, s, s, c => markTile(c, s, TH_WARM, WHITE)));
+/* one colour, for stamps, embroidery and anywhere the brand is a guest */
+[256,512,1024].forEach(s => add(`mark-mono-white-${s}`, s, s, c => markTile(c, s, TH_MONO_W, null)));
+[256,512,1024].forEach(s => add(`mark-mono-black-${s}`, s, s, c => markTile(c, s, TH_MONO_B, null)));
+
+/* icons: tight crop, because 16px has no room for clear space */
+add("favicon-16", 16, 16, c => markTight(c, 16, TH_DARK, BLACK));
+add("favicon-32", 32, 32, c => markTight(c, 32, TH_DARK, BLACK));
+add("favicon-48", 48, 48, c => markTight(c, 48, TH_DARK, BLACK));
+add("apple-touch-icon-180", 180, 180, c => markTile(c, 180, TH_DARK, BLACK));
+add("icon-192", 192, 192, c => markTile(c, 192, TH_DARK, BLACK));
+add("icon-512", 512, 512, c => markTile(c, 512, TH_DARK, BLACK));
+
+/* lockups */
+[[1200,300],[2400,600]].forEach(([w,h]) => {
+  add(`lockup-dark-${w}`, w, h, c => lockup(c, w, h, TH_DARK, BLACK));
+  add(`lockup-light-${w}`, w, h, c => lockup(c, w, h, TH_WARM, WHITE));
+  add(`lockup-transparent-${w}`, w, h, c => lockup(c, w, h, TH_DARK, null));
+});
+/* wordmarks */
+add("wordmark-white-2000", 2000, 320, c => wordmark(c, 2000, 320, WHITE, null));
+add("wordmark-black-2000", 2000, 320, c => wordmark(c, 2000, 320, BLACK, null));
+
+/* the link preview */
+add("og-image", 1200, 630, c => ogCard(c, 1200, 630));
+
+const LOGOS = {
+  async all(preview){
+    await document.fonts.ready;
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    let n = 0;
+    for (const it of ITEMS){
+      const cv = document.createElement("canvas");
+      cv.width = it.w; cv.height = it.h;
+      it.draw(cv.getContext("2d"));
+      if (preview){
+        const fig = document.createElement("figure");
+        fig.appendChild(cv);
+        const cap = document.createElement("figcaption");
+        cap.textContent = it.name + " // " + it.w + "×" + it.h;
+        fig.appendChild(cap);
+        grid.appendChild(fig);
+      } else {
+        const b = await new Promise(r => cv.toBlob(r, "image/png"));
+        for (let a=0;a<4;a++){
+          try { const r = await fetch("/_save/" + it.name + ".png", { method:"POST", body:b }); if (r.ok) break; }
+          catch(e){ await new Promise(r=>setTimeout(r,250*(a+1))); }
+        }
+      }
+      n++;
+      window.__logos = { done:n, total:ITEMS.length, last:it.name };
+    }
+    return window.__logos;
+  },
+  items: ITEMS
+};
+window.LOGOS = LOGOS;
+LOGOS.all(true);
+</script>
+</body>
+</html>

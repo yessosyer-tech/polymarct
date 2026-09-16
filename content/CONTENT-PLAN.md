@@ -8,6 +8,13 @@ Regenerate any time: `python tools/serve.py`, open `/brand/export.html`, run
 
 ---
 
+## Format
+
+PNG, always, for everything. That is the house rule going forward: any new
+asset for this brand is exported as PNG, whatever it is. X re-encodes uploads
+anyway, but PNG in means text stays sharp instead of arriving pre-softened, and
+the acid stays the exact acid.
+
 ## What is in the folder
 
 | Set | Count | Size | What it is |

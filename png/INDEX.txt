@@ -3,26 +3,30 @@ POLYMARCT // PNG DELIVERABLES
 Everything here is a PNG. Open the folder, use the file.
 The contact sheets in 00 show every image in a folder at a glance.
 
+00-contact-sheets       7 files   One image per folder, everything at a glance
 01-logo                30 files   The mark, lockups and wordmarks
 02-icons                6 files   Favicons and app icons
 03-social              36 files   Signal, hook, explainer and stat cards for posting
 04-profile              2 files   X header and avatar
 05-link-preview         1 files   The card a shared link shows
 06-film-stills         28 files   Frames pulled from the four films
-00-contact-sheets       6 files   One image per folder, everything at a glance
+Twitter                10 files   Ten explainer cards, one layout each
 
 Sizes
   logo            16 to 1024 px square, plus lockups to 2400 wide
   icons           16 / 32 / 48 / 180 / 192 / 512
   social          1600x900 for the timeline, 1080x1350 for feed footprint
+  Twitter         1600x900, ten layouts, checked for text collisions
   profile         header 1500x500, avatar 400x400
   link preview    1200x630
   film stills     1920x1080
 
 Rebuilding
   python tools/build_png.py
+  01, 02, 05, 06 and the contact sheets are rebuilt from the repo.
+  03, 04 and Twitter are authored in place and left alone.
 
 Rules that travel with these files
   no promised returns, no guaranteed, no risk free, no APY
-  the domain stays off every asset until the real one is live
+  never lead with the token, the product is the hook
   USDC on Arc is the only asset the product accepts

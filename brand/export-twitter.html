@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TWITTER SET // POLYMARCT</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/polymarct.css">
+<style>#grid{display:grid;gap:14px}#grid canvas{width:100%;border:1px solid var(--line)}</style>
+</head>
+<body>
+<section class="sec sec--flush"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>TWITTER SET</div>
+  <h1 class="display--sm" style="margin-top:14px">Ten pieces that<br>teach something.</h1>
+  <p class="lede" style="margin-top:16px">Every card is its own layout, built on a hard grid with no background type behind the copy. <span class="mono acid">TW.all()</span> writes them; <span class="mono acid">TW.collisions()</span> proves nothing overlaps.</p>
+  <pre class="mono" id="log" style="margin-top:22px;font-size:12px;color:var(--muted);white-space:pre-wrap"></pre>
+  <div id="grid" style="margin-top:20px"></div>
+</div></section>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/engine.js"></script>
+<script src="brand-render.js"></script>
+<script>
+/* POLYMARCT / the Twitter set
+   Ten explainers, ten different layouts. The rule that shapes all of them:
+   nothing is drawn behind type. Where the earlier cards let the market field
+   run under a headline, these keep the ground empty and use structure instead.
+   Every string is measured and its box recorded, so collisions are a test
+   failure rather than something you notice after posting. */
+
+const W = 1600, H = 900, M = 88;          /* frame and margin */
+const BLACK = "#08090A", WHITE = "#F2EFE9", ACID = "#CCFF00", DIM = "#8A8F94",
+      LINE = "rgba(242,239,233,.13)", LINE2 = "rgba(242,239,233,.30)", NO = "#FF4D2E", BLUE = "#2F6BFF";
+
+let BOXES = [];                            /* every text box drawn on this card */
+
+function F(size, weight, mono){
+  return `${weight||500} ${size}px ${mono ? "'JetBrains Mono',ui-monospace,monospace" : "'Inter Tight',Inter,sans-serif"}`;
+}
+
+/* the only text primitive. it measures, records and draws. */
+function tx(c, str, x, y, o){
+  o = o || {};
+  const size = o.size || 24, mono = !!o.mono, weight = o.weight || 500;
+  c.save();
+  c.font = F(size, weight, mono);
+  if ("letterSpacing" in c) c.letterSpacing = (o.track || 0) + "px";
+  c.fillStyle = o.color || WHITE;
+  c.textAlign = o.align || "left";
+  c.textBaseline = "alphabetic";
+  const m = c.measureText(str);
+  const w = m.width;
+  const asc = m.actualBoundingBoxAscent || size * 0.75;
+  const desc = m.actualBoundingBoxDescent || size * 0.22;
+  const left = o.align === "right" ? x - w : o.align === "center" ? x - w/2 : x;
+  if (str.trim()) BOXES.push({ x:left, y:y-asc, w, h:asc+desc, s:str.slice(0,28) });
+  c.fillText(str, x, y);
+  c.restore();
+  return w;
+}
+
+function measure(c, str, o){
+  o = o || {};
+  c.save(); c.font = F(o.size||24, o.weight||500, !!o.mono);
+  if ("letterSpacing" in c) c.letterSpacing = (o.track||0) + "px";
+  const w = c.measureText(str).width; c.restore(); return w;
+}
+
+/* truncate to a width, so a long question can never run into the next column */
+function fit(c, str, maxw, o){
+  if (measure(c, str, o) <= maxw) return str;
+  let s = str;
+  while (s.length > 4 && measure(c, s + "…", o) > maxw) s = s.slice(0, -1);
+  return s + "…";
+}
+
+function wrapLines(c, str, maxw, o){
+  const words = str.split(" "), out = []; let line = "";
+  for (const w of words){
+    const t = line ? line + " " + w : w;
+    if (measure(c, t, o) > maxw && line){ out.push(line); line = w; } else line = t;
+  }
+  if (line) out.push(line);
+  return out;
+}
+
+/* ---------- furniture, identical on every card ---------- */
+function ground(c){
+  c.fillStyle = BLACK; c.fillRect(0,0,W,H);
+  c.strokeStyle = "rgba(242,239,233,.045)"; c.lineWidth = 1;
+  c.beginPath();
+  for (let x = M; x < W - M + 1; x += (W - M*2)/12){ c.moveTo(x+.5, M); c.lineTo(x+.5, H - M); }
+  c.stroke();
+}
+function head(c, eyebrow, n){
+  c.beginPath(); c.arc(M+6, M-8, 6, 0, 7); c.fillStyle = ACID; c.fill();
+  tx(c, eyebrow, M+24, M, { size:19, mono:true, track:4.6, color:DIM });
+  tx(c, String(n).padStart(2,"0") + " / 10", W-M, M, { size:19, mono:true, track:4.6, color:DIM, align:"right" });
+  c.fillStyle = LINE; c.fillRect(M, M+22, W-M*2, 1);
+}
+function title(c, str, y, size){
+  size = size || 58;
+  tx(c, str, M, y, { size, weight:600, track:-size*0.042, color:WHITE });
+}
+function foot(c, note){
+  c.fillStyle = LINE; c.fillRect(M, H-M-52, W-M*2, 1);
+  BRAND.mark(c, M, H-M-38, 36, BRAND.THEMES.black);
+  tx(c, "POLYMARCT", M+50, H-M-10, { size:26, weight:600, track:-.8, color:WHITE });
+  tx(c, note || "$PMARC // ON ARC", W-M, H-M-10, { size:17, mono:true, track:3.6, color:DIM, align:"right" });
+}
+function rule(c, x, y, w, col){ c.fillStyle = col || LINE; c.fillRect(x, y, w, 1); }
+function vrule(c, x, y, h, col){ c.fillStyle = col || LINE; c.fillRect(x, y, 1, h); }
+
+/* an elbow leader line from a label to a point on the graphic */
+function leader(c, x1, y1, x2, y2){
+  c.save(); c.strokeStyle = LINE2; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(x1, y1); c.lineTo((x1+x2)/2, y1); c.lineTo((x1+x2)/2, y2); c.lineTo(x2, y2);
+  c.stroke();
+  c.beginPath(); c.arc(x2, y2, 4, 0, 7); c.fillStyle = ACID; c.fill();
+  c.restore();
+}
+
+/* ============================ THE TEN ============================ */
+const CARDS = [];
+const card = (name, draw) => CARDS.push({ name, draw });
+
+/* 01 — the parts of a market, called out */
+card("01-anatomy", c => {
+  ground(c); head(c, "ANATOMY", 1);
+  title(c, "Every market is five things.", 190);
+
+  const bx = M, by = 250, bw = 620, bh = 400;
+  c.fillStyle = "#0D0F11"; c.fillRect(bx, by, bw, bh);
+  c.strokeStyle = LINE2; c.lineWidth = 1.5; c.strokeRect(bx+.5, by+.5, bw, bh);
+  tx(c, "CRYPTO", bx+28, by+50, { size:17, mono:true, track:4, color:DIM });
+  const q = wrapLines(c, "Will BTC reach $125,000 before October 31?", bw-56, { size:31, weight:500 });
+  q.forEach((l,i)=> tx(c, l, bx+28, by+100+i*38, { size:31, weight:500, track:-.8 }));
+  tx(c, "67%", bx+28, by+250, { size:96, weight:600, track:-5 });
+  tx(c, "YES", bx+210, by+250, { size:24, mono:true, track:6, color:DIM });
+  c.fillStyle = "rgba(242,239,233,.12)"; c.fillRect(bx+28, by+286, bw-56, 8);
+  c.fillStyle = ACID; c.fillRect(bx+28, by+286, (bw-56)*0.67, 8);
+  tx(c, "$4.82M VOL", bx+28, by+346, { size:18, mono:true, track:2, color:DIM });
+  tx(c, "23D LEFT", bx+250, by+346, { size:18, mono:true, track:2, color:DIM });
+  tx(c, "COINBASE BTC-USD, HOURLY CLOSE", bx+28, by+382, { size:15, mono:true, track:2, color:"rgba(242,239,233,.34)" });
+
+  const lx = 900, rows = [
+    [305, "THE QUESTION", "Closed, dated, nothing subjective", bx+bw, by+118],
+    [400, "THE PRICE", "67 cents to take YES, 33 to take NO", bx+bw, by+232],
+    [495, "THE BOOK", "How much money is on each side", bx+bw, by+290],
+    [590, "THE CLOCK", "When trading stops and reality is read", bx+bw, by+346],
+    [670, "THE SOURCE", "Named before trading opens, fixed after", bx+bw, by+382]
+  ];
+  rows.forEach(([y, k, v, px, py]) => {
+    leader(c, lx-24, y-10, px+10, py-8);
+    tx(c, k, lx, y, { size:26, weight:600, track:-.6, color:ACID });
+    tx(c, v, lx, y+30, { size:19, mono:true, track:1.2, color:DIM });
+  });
+  foot(c, "polymarct");
+});
+
+/* 02 — what a price actually buys */
+card("02-what-67-cents-buys", c => {
+  ground(c); head(c, "THE MATH", 2);
+  title(c, "What 67 cents actually buys.", 190);
+  tx(c, "A share pays exactly one dollar if it is right, and nothing if it is wrong. The price is the odds.",
+     M, 240, { size:22, mono:true, track:1, color:DIM });
+
+  const cells = [
+    ["YOU COMMIT", "$100", "USDC on Arc", WHITE],
+    ["YOU RECEIVE", "149.25", "YES shares at 67¢", WHITE],
+    ["IF IT HAPPENS", "$149.25", "149.25 × $1.00", ACID],
+    ["IF IT DOES NOT", "$0.00", "the shares expire", NO]
+  ];
+  const cw = (W - M*2) / 4;
+  cells.forEach(([k, v, note, col], i) => {
+    const x = M + i*cw;
+    if (i) vrule(c, x, 300, 300);
+    tx(c, k, x+30, 348, { size:17, mono:true, track:3.4, color:DIM });
+    tx(c, v, x+30, 440, { size:64, weight:600, track:-3, color:col });
+    tx(c, note, x+30, 490, { size:17, mono:true, track:1, color:"rgba(242,239,233,.42)" });
+  });
+  rule(c, M, 620, W-M*2);
+  tx(c, "PROFIT IF RIGHT", M, 672, { size:17, mono:true, track:3.4, color:DIM });
+  tx(c, "+$49.25", M, 736, { size:58, weight:600, track:-2.4, color:ACID });
+  tx(c, "MAX LOSS", M+430, 672, { size:17, mono:true, track:3.4, color:DIM });
+  tx(c, "−$100.00", M+430, 736, { size:58, weight:600, track:-2.4, color:NO });
+  tx(c, "You can lose everything you commit. That is the trade.", W-M, 736,
+     { size:20, mono:true, track:1, color:DIM, align:"right" });
+  foot(c);
+});
+
+/* 03 — is the price any good? */
+card("03-calibration", c => {
+  ground(c); head(c, "CALIBRATION", 3);
+  title(c, "A price is a claim\nthat can be graded.", 186, 54);
+  const lines = ["A price is a claim", "that can be graded."];
+  BOXES.pop();                                   /* title drew one line, redo properly */
+  lines.forEach((l,i)=> tx(c, l, M, 186+i*58, { size:54, weight:600, track:-2.3 }));
+  wrapLines(c, "When a market says 70%, those questions should come true about 70% of the time. Plot every resolved market against what actually happened and the honest answer is a diagonal.",
+    520, { size:20, mono:true, track:1 })
+    .forEach((l,i)=> tx(c, l, M, 350+i*32, { size:20, mono:true, track:1, color:DIM }));
+  tx(c, "ILLUSTRATIVE, NOT A TRACK RECORD", M, 560, { size:16, mono:true, track:3, color:"rgba(242,239,233,.34)" });
+
+  const px = 760, py = 210, ps = 540;
+  c.strokeStyle = LINE; c.lineWidth = 1;
+  for (let i=0;i<=5;i++){
+    const gy = py + ps*(i/5), gx = px + ps*(i/5);
+    c.beginPath(); c.moveTo(px, gy+.5); c.lineTo(px+ps, gy+.5); c.stroke();
+    c.beginPath(); c.moveTo(gx+.5, py); c.lineTo(gx+.5, py+ps); c.stroke();
+  }
+  c.strokeStyle = LINE2; c.setLineDash([6,6]);
+  c.beginPath(); c.moveTo(px, py+ps); c.lineTo(px+ps, py); c.stroke(); c.setLineDash([]);
+  const pts = [[.1,.08],[.2,.23],[.3,.27],[.4,.44],[.5,.48],[.6,.63],[.7,.68],[.8,.84],[.9,.88],[.95,.93]];
+  pts.forEach(([a,b]) => {
+    c.beginPath(); c.arc(px+ps*a, py+ps*(1-b), 9, 0, 7);
+    c.fillStyle = ACID; c.fill();
+  });
+  tx(c, "WHAT THE MARKET SAID", px+ps/2, py+ps+46, { size:16, mono:true, track:3, color:DIM, align:"center" });
+  c.save(); c.translate(px-34, py+ps/2); c.rotate(-Math.PI/2);
+  tx(c, "WHAT HAPPENED", 0, 0, { size:16, mono:true, track:3, color:DIM, align:"center" });
+  c.restore();
+  foot(c);
+});
+
+/* 04 — the difference between a take and a price */
+card("04-opinion-vs-price", c => {
+  ground(c); head(c, "TAKES VERSUS PRICES", 4);
+  title(c, "One of these can be wrong in public.", 190);
+
+  const midx = W/2;
+  vrule(c, midx, 250, 430, LINE2);
+  tx(c, "AN OPINION", M, 296, { size:19, mono:true, track:4.4, color:DIM });
+  tx(c, "A PRICE", midx+56, 296, { size:19, mono:true, track:4.4, color:ACID });
+
+  const rows = [
+    ["“Rates are going nowhere.”", "FED CUTS NEXT MEETING", "71%"],
+    ["“ETFs are done buying.”", "$2B INFLOW WEEK BY DEC", "58%"],
+    ["“Nobody uses that chain.”", "ARC OVER 1M DAILY TX", "42%"],
+    ["“It is priced in already.”", "NEW FRONTIER MODEL BY DEC", "69%"]
+  ];
+  rows.forEach(([op, q, p], i) => {
+    const y = 380 + i*78;
+    tx(c, fit(c, op, midx-M-60, { size:27, weight:500 }), M, y, { size:27, weight:500, track:-.6, color:"rgba(242,239,233,.55)" });
+    tx(c, q, midx+56, y-6, { size:17, mono:true, track:2.4, color:DIM });
+    tx(c, p, W-M, y, { size:40, weight:600, track:-1.6, color:WHITE, align:"right" });
+    if (i < rows.length-1) rule(c, M, y+26, W-M*2);
+  });
+  tx(c, "An opinion costs nothing to hold. A price costs money to be wrong about.",
+     M, 726, { size:21, mono:true, track:1.2, color:DIM });
+  foot(c);
+});
+
+/* 05 — a market from open to settlement */
+card("05-life-of-a-market", c => {
+  ground(c); head(c, "LIFE OF A MARKET", 5);
+  title(c, "From open question to paid out.", 190);
+
+  const ax = M, ay = 560, aw = W - M*2;
+  const series = [ .50,.52,.49,.53,.58,.57,.61,.66,.64,.71,.74,.72,.78,.83,.88,.94,.98 ];
+  const px = i => ax + (i/(series.length-1))*aw;
+  const py = v => ay - v*230;
+  c.beginPath();
+  series.forEach((v,i)=> i ? c.lineTo(px(i), py(v)) : c.moveTo(px(i), py(v)));
+  c.strokeStyle = ACID; c.lineWidth = 3.5; c.stroke();
+  c.beginPath(); c.moveTo(ax, ay); c.lineTo(ax+aw, ay); c.strokeStyle = LINE2; c.lineWidth = 1; c.stroke();
+
+  const marks = [
+    [0,  "OPENS", "50¢", "Seeded, nobody knows anything"],
+    [4,  "FLOW", "58¢", "Money arrives with a view"],
+    [9,  "EVENT", "71¢", "Information lands, the price jumps"],
+    [12, "CLOSE", "78¢", "Trading stops on the deadline"],
+    [16, "VERDICT", "$1.00", "The source is read, winners settle"]
+  ];
+  marks.forEach(([i, k, v, note]) => {
+    const x = px(i);
+    c.beginPath(); c.moveTo(x, py(series[i])); c.lineTo(x, ay+18); c.strokeStyle = LINE2; c.lineWidth = 1; c.stroke();
+    c.beginPath(); c.arc(x, py(series[i]), 7, 0, 7); c.fillStyle = ACID; c.fill();
+    const align = i === 16 ? "right" : i === 0 ? "left" : "center";
+    const tX = i === 16 ? x : i === 0 ? x : x;
+    tx(c, k, tX, ay+62, { size:22, weight:600, track:-.4, color:WHITE, align });
+    tx(c, v, tX, ay+96, { size:26, mono:true, track:0, color:ACID, align });
+    wrapLines(c, note, 168, { size:16, mono:true, track:1 })
+      .forEach((l,j)=> tx(c, l, tX, ay+132+j*24, { size:16, mono:true, track:1, color:DIM, align }));
+  });
+  foot(c);
+});
+
+/* 06 — how a verdict is reached */
+card("06-verdict-engine", c => {
+  ground(c); head(c, "THE VERDICT ENGINE", 6);
+  title(c, "Nobody votes on what happened.", 190);
+
+  const steps = ["EVENT", "SOURCE", "VERIFY", "VERDICT", "SETTLE"];
+  const notes = ["The world does something", "The feed named at creation", "Read, cross checked, published", "Written with its evidence", "Winners paid in USDC"];
+  const bw = 232, gap = (W - M*2 - bw*5) / 4, by = 300, bh = 132;
+  steps.forEach((s, i) => {
+    const x = M + i*(bw+gap);
+    c.fillStyle = "#0D0F11"; c.fillRect(x, by, bw, bh);
+    c.strokeStyle = i === 3 ? ACID : LINE2; c.lineWidth = i === 3 ? 2 : 1; c.strokeRect(x+.5, by+.5, bw, bh);
+    tx(c, String(i+1).padStart(2,"0"), x+20, by+40, { size:16, mono:true, track:3, color:DIM });
+    tx(c, s, x+20, by+86, { size:30, weight:600, track:-1, color: i === 3 ? ACID : WHITE });
+    wrapLines(c, notes[i], bw-40, { size:15, mono:true, track:.8 })
+      .forEach((l,j)=> tx(c, l, x+20, by+bh+34+j*22, { size:15, mono:true, track:.8, color:DIM }));
+    if (i < 4){
+      const axx = x+bw+gap*0.22, ax2 = x+bw+gap*0.78, ayy = by+bh/2;
+      c.strokeStyle = LINE2; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(axx, ayy); c.lineTo(ax2, ayy); c.stroke();
+      c.beginPath(); c.moveTo(ax2, ayy); c.lineTo(ax2-9, ayy-6); c.lineTo(ax2-9, ayy+6); c.closePath();
+      c.fillStyle = LINE2; c.fill();
+    }
+  });
+  const dx = M + 3*(bw+gap), dbx = W - M - 400;
+  c.strokeStyle = "rgba(47,107,255,.6)"; c.lineWidth = 1.5;
+  c.beginPath();
+  c.moveTo(dx+bw/2, by+bh+96); c.lineTo(dx+bw/2, 616); c.lineTo(dbx+200, 616); c.lineTo(dbx+200, 640);
+  c.stroke();
+  c.fillStyle = "#0D0F11"; c.fillRect(dbx, 640, 400, 118);
+  c.strokeStyle = "rgba(47,107,255,.6)"; c.strokeRect(dbx+.5, 640.5, 400, 118);
+  tx(c, "DISPUTE WINDOW", dbx+24, 686, { size:22, weight:600, track:-.6, color:BLUE });
+  tx(c, "24 hours, bonded, argued only", dbx+24, 716, { size:15, mono:true, track:.8, color:DIM });
+  tx(c, "against the original wording", dbx+24, 740, { size:15, mono:true, track:.8, color:DIM });
+  tx(c, "The question cannot change", M, 686, { size:26, mono:true, track:1.4, color:WHITE });
+  tx(c, "after trading opens.", M, 720, { size:26, mono:true, track:1.4, color:WHITE });
+  tx(c, "If the source cannot answer, the market voids at cost.", M, 758, { size:18, mono:true, track:1, color:DIM });
+  foot(c);
+});
+
+/* 07 — an annotated move */
+card("07-why-it-moved", c => {
+  ground(c); head(c, "WHY IT MOVED", 7);
+  title(c, "Every jump has a reason\nyou can point at.", 178, 52);
+
+  const ax = M, aw = 780, ay = 660, ah = 300;
+  const s = [.46,.47,.45,.48,.47,.52,.61,.60,.63,.62,.66,.74,.73,.76,.78];
+  const px = i => ax + (i/(s.length-1))*aw, py = v => ay - (v-.4)*ah*2.2;
+  c.beginPath(); c.moveTo(ax, ay);
+  s.forEach((v,i)=> c.lineTo(px(i), py(v)));
+  c.lineTo(px(s.length-1), ay); c.closePath();
+  c.fillStyle = "rgba(204,255,0,.08)"; c.fill();
+  c.beginPath(); s.forEach((v,i)=> i ? c.lineTo(px(i), py(v)) : c.moveTo(px(i), py(v)));
+  c.strokeStyle = ACID; c.lineWidth = 3; c.stroke();
+  rule(c, ax, ay, aw, LINE2);
+
+  const notes = [[5,"1"],[6,"2"],[11,"3"],[13,"4"]];
+  notes.forEach(([i, n]) => {
+    c.beginPath(); c.arc(px(i), py(s[i]) - 34, 17, 0, 7);
+    c.fillStyle = BLACK; c.fill(); c.strokeStyle = ACID; c.lineWidth = 2; c.stroke();
+    tx(c, n, px(i), py(s[i]) - 28, { size:18, mono:true, weight:700, color:ACID, align:"center" });
+  });
+
+  const lx = 960;
+  const legend = [
+    ["1", "VOLUME SPIKE", "4.2× the daily average in eleven minutes"],
+    ["2", "LARGE TRADE", "A single $284,000 fill, taking the offer"],
+    ["3", "INFORMATION EVENT", "The price broke its 24 hour range and held"],
+    ["4", "LIQUIDITY", "Makers widened, then came back deeper"]
+  ];
+  tx(c, "WHAT THE FLOW SHOWS", lx, 300, { size:17, mono:true, track:4, color:DIM });
+  rule(c, lx, 320, W-M-lx);
+  legend.forEach(([n, k, v], i) => {
+    const y = 380 + i*96;
+    c.beginPath(); c.arc(lx+16, y-9, 16, 0, 7); c.strokeStyle = LINE2; c.lineWidth = 1.5; c.stroke();
+    tx(c, n, lx+16, y-3, { size:16, mono:true, weight:700, color:ACID, align:"center" });
+    tx(c, k, lx+50, y, { size:24, weight:600, track:-.6, color:WHITE });
+    wrapLines(c, v, W-M-lx-50, { size:16, mono:true, track:.9 })
+      .forEach((l,j)=> tx(c, l, lx+50, y+28+j*22, { size:16, mono:true, track:.9, color:DIM }));
+  });
+  tx(c, "Drivers are computed from flow. We do not tell you what to think about them.",
+     M, ay+64, { size:19, mono:true, track:1, color:DIM });
+  foot(c);
+});
+
+/* 08 — the spread, and where the logo comes from */
+card("08-the-spread", c => {
+  ground(c); head(c, "THE SPREAD", 8);
+  title(c, "The logo is a picture of the book.", 190);
+
+  const cx = W*0.44, top = 280, rowh = 42, n = 5;
+  tx(c, "YES BIDS", cx-330, top-24, { size:17, mono:true, track:3.4, color:DIM, align:"right" });
+  tx(c, "NO BIDS", cx+330, top-24, { size:17, mono:true, track:3.4, color:DIM });
+  for (let i=0;i<n;i++){
+    const y = top + i*rowh, wA = 300 - i*44, wB = 230 - i*40;
+    c.fillStyle = "rgba(242,239,233,.86)"; c.fillRect(cx-60-wA, y, wA, 26);
+    c.fillStyle = "rgba(204,255,0,.86)"; c.fillRect(cx+60, y, wB, 26);
+    tx(c, (67-i) + "¢", cx-72, y+20, { size:18, mono:true, color:DIM, align:"right" });
+    tx(c, (33-i) + "¢", cx+72+wB+12, y+20, { size:18, mono:true, color:DIM });
+  }
+  c.strokeStyle = LINE2; c.setLineDash([5,5]);
+  c.beginPath(); c.moveTo(cx, top-40); c.lineTo(cx, top+n*rowh+30); c.stroke(); c.setLineDash([]);
+  tx(c, "THE SPREAD", cx, top+n*rowh+64, { size:19, mono:true, track:3.4, color:ACID, align:"center" });
+  tx(c, "where the last trade happened", cx, top+n*rowh+94, { size:17, mono:true, track:1, color:DIM, align:"center" });
+
+  const mx = W - M - 220;
+  BRAND.mark(c, mx, 300, 220, BRAND.THEMES.black);
+  tx(c, "TWO SIDES.", mx, 580, { size:30, weight:600, track:-1 });
+  tx(c, "ONE PRICE", mx, 616, { size:30, weight:600, track:-1, color:ACID });
+  tx(c, "BETWEEN THEM.", mx, 652, { size:30, weight:600, track:-1 });
+  tx(c, "The taller bracket is the side holding the weight of the money. The bar in the gap is the last print.",
+     M, 762, { size:19, mono:true, track:1, color:DIM });
+  foot(c);
+});
+
+/* 09 — the identity that makes the whole thing work */
+card("09-one-dollar", c => {
+  ground(c); head(c, "THE IDENTITY", 9);
+  title(c, "The two sides always\nadd up to a dollar.", 182, 56);
+  const l2 = ["The two sides always", "add up to a dollar."];
+  BOXES.pop();
+  l2.forEach((l,i)=> tx(c, l, M, 182+i*60, { size:56, weight:600, track:-2.4 }));
+
+  const bx = M, by = 380, bw = W - M*2, bh = 108;
+  c.fillStyle = "rgba(242,239,233,.90)"; c.fillRect(bx, by, bw*0.67, bh);
+  c.fillStyle = "rgba(255,77,46,.85)"; c.fillRect(bx + bw*0.67, by, bw*0.33, bh);
+  tx(c, "YES  67¢", bx+28, by+70, { size:44, weight:700, track:-1.4, color:BLACK });
+  tx(c, "NO  33¢", bx+bw-28, by+70, { size:44, weight:700, track:-1.4, color:BLACK, align:"right" });
+  tx(c, "67¢  +  33¢  =  $1.00", M, 580, { size:46, mono:true, weight:700, track:2, color:ACID });
+  wrapLines(c, "Buy both sides and you have paid a dollar for something that pays a dollar. That is why a price is a probability here, and not a bookmaker's margin dressed up as one.",
+    W-M*2, { size:22, mono:true, track:1.1 })
+    .forEach((l,i)=> tx(c, l, M, 650+i*34, { size:22, mono:true, track:1.1, color:DIM }));
+  foot(c);
+});
+
+/* 10 — the board, dense and real */
+card("10-the-board", c => {
+  ground(c); head(c, "THE BOARD", 10);
+  title(c, "What the market is saying right now.", 190);
+
+  const cols = [M, 300, 1080, 1250, W-M];
+  const y0 = 268;
+  tx(c, "CATEGORY", cols[0], y0, { size:16, mono:true, track:3.2, color:DIM });
+  tx(c, "QUESTION", cols[1], y0, { size:16, mono:true, track:3.2, color:DIM });
+  tx(c, "PRICE", cols[2], y0, { size:16, mono:true, track:3.2, color:DIM, align:"right" });
+  tx(c, "24H", cols[3], y0, { size:16, mono:true, track:3.2, color:DIM, align:"right" });
+  tx(c, "VOLUME", cols[4], y0, { size:16, mono:true, track:3.2, color:DIM, align:"right" });
+  rule(c, M, y0+18, W-M*2, LINE2);
+
+  PM.sorted("moving").slice(0,8).forEach((m, i) => {
+    const y = y0 + 74 + i*58;
+    tx(c, m.cat, cols[0], y, { size:16, mono:true, track:2.4, color:"rgba(242,239,233,.42)" });
+    tx(c, fit(c, m.q, cols[2]-cols[1]-120, { size:24, weight:500 }), cols[1], y,
+       { size:24, weight:500, track:-.6, color:WHITE });
+    tx(c, Math.round(m.yes*100) + "%", cols[2], y, { size:30, weight:600, track:-1, color:WHITE, align:"right" });
+    tx(c, PM.fmt.signed(m.d24), cols[3], y, { size:20, mono:true, color: m.d24>=0?ACID:NO, align:"right" });
+    tx(c, PM.fmt.usd(m.vol), cols[4], y, { size:20, mono:true, color:DIM, align:"right" });
+    rule(c, M, y+20, W-M*2);
+  });
+  foot(c, "USDC ON ARC");
+});
+
+/* ============================ export ============================ */
+function overlaps(a, b){
+  const pad = 2;
+  return a.x < b.x + b.w - pad && a.x + a.w - pad > b.x &&
+         a.y < b.y + b.h - pad && a.y + a.h - pad > b.y;
+}
+
+const TW = {
+  render(i, canvas){
+    BOXES = [];
+    const c = canvas.getContext("2d");
+    CARDS[i].draw(c);
+    const hits = [];
+    for (let a=0;a<BOXES.length;a++)
+      for (let b=a+1;b<BOXES.length;b++)
+        if (overlaps(BOXES[a], BOXES[b])) hits.push(BOXES[a].s + "  X  " + BOXES[b].s);
+    return hits;
+  },
+  collisions(){
+    const report = [];
+    CARDS.forEach((card, i) => {
+      const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      const hits = this.render(i, cv);
+      report.push(card.name + ": " + (hits.length ? hits.length + " OVERLAP -> " + hits.join(" | ") : "clean"));
+    });
+    document.getElementById("log").textContent = report.join("\n");
+    return report;
+  },
+  async all(preview){
+    await document.fonts.ready;
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    let n = 0, bad = 0;
+    for (let i=0;i<CARDS.length;i++){
+      const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      const hits = this.render(i, cv);
+      if (hits.length) bad++;
+      if (preview) grid.appendChild(cv);
+      else {
+        const b = await new Promise(r => cv.toBlob(r, "image/png"));
+        for (let a=0;a<4;a++){
+          try { const r = await fetch("/_save/tw-" + CARDS[i].name + ".png", { method:"POST", body:b }); if (r.ok) break; }
+          catch(e){ await new Promise(r=>setTimeout(r,250*(a+1))); }
+        }
+      }
+      n++;
+      window.__tw = { done:n, total:CARDS.length, overlaps:bad };
+    }
+    return window.__tw;
+  },
+  cards: CARDS
+};
+window.TW = TW;
+document.fonts.ready.then(()=>{ TW.collisions(); TW.all(true); });
+</script>
+</body>
+</html>

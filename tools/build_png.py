@@ -6,8 +6,14 @@ image viewer. No page to open, no renderer to run.
 
     python tools/build_png.py
 
-Regenerating the source art still happens in the browser exporters, but the
-output of this script is the thing that gets handed over.
+Two kinds of folder live here:
+
+  DERIVED   rebuilt from elsewhere in the repo every run, safe to wipe
+  AUTHORED  the cards themselves live here and nowhere else, never wiped
+
+That distinction matters. An earlier version of this script wiped the whole
+tree and refilled it from a folder that had since been deleted, which emptied
+the set. Only derived folders are cleared now.
 """
 import os
 import shutil
@@ -18,15 +24,21 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PNG = os.path.join(ROOT, "png")
 
-FOLDERS = [
-    ("01-logo",          "The mark, lockups and wordmarks"),
-    ("02-icons",         "Favicons and app icons"),
-    ("03-social",        "Signal, hook, explainer and stat cards for posting"),
-    ("04-profile",       "X header and avatar"),
-    ("05-link-preview",  "The card a shared link shows"),
-    ("06-film-stills",   "Frames pulled from the four films"),
-    ("00-contact-sheets","One image per folder, everything at a glance"),
-]
+DERIVED = {
+    "01-logo":           "The mark, lockups and wordmarks",
+    "02-icons":          "Favicons and app icons",
+    "05-link-preview":   "The card a shared link shows",
+    "06-film-stills":    "Frames pulled from the four films",
+    "00-contact-sheets": "One image per folder, everything at a glance",
+}
+AUTHORED = {
+    "03-social":  "Signal, hook, explainer and stat cards for posting",
+    "04-profile": "X header and avatar",
+    "Twitter":    "Ten explainer cards, one layout each",
+}
+ORDER = ["00-contact-sheets", "01-logo", "02-icons", "03-social", "04-profile",
+         "05-link-preview", "06-film-stills", "Twitter"]
+NOTES = dict(DERIVED, **AUTHORED)
 
 BLACK = (8, 9, 10)
 WHITE = (242, 239, 233)
@@ -46,20 +58,22 @@ def font(size, mono=False):
     return ImageFont.load_default()
 
 
-def fresh():
-    if os.path.isdir(PNG):
-        shutil.rmtree(PNG)
-    for name, _ in FOLDERS:
+def prepare():
+    for name in DERIVED:
+        d = os.path.join(PNG, name)
+        if os.path.isdir(d):
+            for f in glob.glob(os.path.join(d, "*.png")):
+                os.remove(f)
+        else:
+            os.makedirs(d, exist_ok=True)
+    for name in AUTHORED:
         os.makedirs(os.path.join(PNG, name), exist_ok=True)
 
 
-def copy(src_glob, dest, rename=None):
+def copy(src_glob, dest):
     n = 0
     for f in sorted(glob.glob(src_glob)):
-        base = os.path.basename(f)
-        if rename:
-            base = rename(base)
-        shutil.copy2(f, os.path.join(PNG, dest, base))
+        shutil.copy2(f, os.path.join(PNG, dest, os.path.basename(f)))
         n += 1
     return n
 
@@ -82,12 +96,16 @@ def stills():
             dst = os.path.join(out, "%s-%05.1fs.png" % (tag, t))
             subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(t), "-i", src,
                             "-frames:v", "1", dst], check=False)
-            n += 1
+            if os.path.exists(dst):
+                im = Image.open(dst).convert("RGB")
+                im.quantize(colors=256, method=Image.MEDIANCUT,
+                            dither=Image.FLOYDSTEINBERG).save(dst, optimize=True)
+                n += 1
     return n
 
 
 def contact_sheet(folder, title, cols=4, cell=520):
-    files = sorted(f for f in glob.glob(os.path.join(PNG, folder, "*.png")))
+    files = sorted(glob.glob(os.path.join(PNG, folder, "*.png")))
     if not files:
         return None
     pad, head, label = 24, 150, 34
@@ -106,7 +124,6 @@ def contact_sheet(folder, title, cols=4, cell=520):
         im.thumbnail((cell, cell), Image.LANCZOS)
         x = pad + (i % cols) * (cell + pad)
         y = head + (i // cols) * (cell + label + pad)
-        # a chequer behind anything transparent, so a transparent mark still reads
         tile = Image.new("RGB", (cell, cell), (18, 20, 23))
         td = ImageDraw.Draw(tile)
         for cx in range(0, cell, 24):
@@ -122,7 +139,8 @@ def contact_sheet(folder, title, cols=4, cell=520):
         d.text((x, y + cell + 9), name, font=font(15, True), fill=DIM)
 
     out = os.path.join(PNG, "00-contact-sheets", folder + ".png")
-    sheet.save(out, optimize=True)
+    sheet.convert("RGB").quantize(colors=256, method=Image.MEDIANCUT,
+                                  dither=Image.FLOYDSTEINBERG).save(out, optimize=True)
     return out
 
 
@@ -134,58 +152,55 @@ def index_txt(counts):
         "The contact sheets in 00 show every image in a folder at a glance.",
         "",
     ]
-    for name, note in FOLDERS:
-        lines.append("%-20s %4d files   %s" % (name, counts.get(name, 0), note))
+    for name in ORDER:
+        lines.append("%-20s %4d files   %s" % (name, counts.get(name, 0), NOTES.get(name, "")))
     lines += [
         "",
         "Sizes",
         "  logo            16 to 1024 px square, plus lockups to 2400 wide",
         "  icons           16 / 32 / 48 / 180 / 192 / 512",
         "  social          1600x900 for the timeline, 1080x1350 for feed footprint",
+        "  Twitter         1600x900, ten layouts, checked for text collisions",
         "  profile         header 1500x500, avatar 400x400",
         "  link preview    1200x630",
         "  film stills     1920x1080",
         "",
         "Rebuilding",
         "  python tools/build_png.py",
+        "  01, 02, 05, 06 and the contact sheets are rebuilt from the repo.",
+        "  03, 04 and Twitter are authored in place and left alone.",
         "",
         "Rules that travel with these files",
         "  no promised returns, no guaranteed, no risk free, no APY",
-        "  the domain stays off every asset until the real one is live",
+        "  never lead with the token, the product is the hook",
         "  USDC on Arc is the only asset the product accepts",
     ]
     open(os.path.join(PNG, "INDEX.txt"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
 
 
 def main():
-    fresh()
+    prepare()
     counts = {}
     counts["01-logo"] = copy(os.path.join(ROOT, "brand", "logo", "png", "*.png"), "01-logo")
     counts["02-icons"] = copy(os.path.join(ROOT, "assets", "icons", "*.png"), "02-icons")
-
-    social = 0
-    for pattern in ("signal-*.png", "hook-*.png", "explainer-*.png", "stat-*.png", "portrait-*.png"):
-        social += copy(os.path.join(ROOT, "content", pattern), "03-social")
-    counts["03-social"] = social
-
-    counts["04-profile"] = copy(os.path.join(ROOT, "content", "profile-*.png"), "04-profile")
     counts["05-link-preview"] = copy(os.path.join(ROOT, "assets", "og-image.png"), "05-link-preview")
     counts["06-film-stills"] = stills()
+    for name in AUTHORED:
+        counts[name] = len(glob.glob(os.path.join(PNG, name, "*.png")))
 
     sheets = 0
-    for name, note in FOLDERS:
+    for name in ORDER:
         if name.startswith("00"):
             continue
-        cols = 3 if name in ("03-social", "06-film-stills", "04-profile", "05-link-preview") else 4
-        if contact_sheet(name, note, cols=cols):
+        cols = 3 if name in ("03-social", "06-film-stills", "04-profile", "05-link-preview", "Twitter") else 4
+        if contact_sheet(name, NOTES[name], cols=cols):
             sheets += 1
     counts["00-contact-sheets"] = sheets
 
     index_txt(counts)
-    total = sum(counts.values())
-    for name, _ in FOLDERS:
+    for name in ORDER:
         print("%-20s %d" % (name, counts.get(name, 0)))
-    print("total %d PNG files in %s" % (total, PNG))
+    print("total %d PNG files in %s" % (sum(counts.values()), PNG))
 
 
 if __name__ == "__main__":

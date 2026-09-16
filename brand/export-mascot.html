@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TICK CONTENT // POLYMARCT</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/polymarct.css">
+<style>#grid{display:grid;gap:14px}#grid canvas{width:100%;border:1px solid var(--line)}</style>
+</head>
+<body>
+<section class="sec sec--flush"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>TICK CONTENT</div>
+  <h1 class="display--sm" style="margin-top:14px">He points at<br>the real thing.</h1>
+  <p class="lede" style="margin-top:16px">Four cards where TICK shows one part of the product. Same collision check as the rest: <span class="mono acid">MC.collisions()</span> must read clean before anything ships.</p>
+  <pre class="mono" id="log" style="margin-top:20px;font-size:12px;color:var(--muted);white-space:pre-wrap"></pre>
+  <div id="grid" style="margin-top:18px"></div>
+</div></section>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/engine.js"></script>
+<script src="brand-render.js"></script>
+<script src="mascot.js"></script>
+<script>
+/* TICK never covers the number he is pointing at, and nothing is drawn behind
+   type. Same rules as the Twitter set, same measured boxes. */
+
+const W = 1600, H = 900, M = 88;
+const BLACK = "#08090A", WHITE = "#F2EFE9", ACID = "#CCFF00", DIM = "#8A8F94",
+      LINE = "rgba(242,239,233,.13)", LINE2 = "rgba(242,239,233,.30)", NO = "#FF4D2E";
+let BOXES = [];
+
+function tx(c, str, x, y, o){
+  o = o || {};
+  const size = o.size || 24;
+  c.save();
+  c.font = `${o.weight||500} ${size}px ${o.mono ? "'JetBrains Mono',ui-monospace,monospace" : "'Inter Tight',Inter,sans-serif"}`;
+  if ("letterSpacing" in c) c.letterSpacing = (o.track || 0) + "px";
+  c.fillStyle = o.color || WHITE;
+  c.textAlign = o.align || "left";
+  const m = c.measureText(str);
+  const asc = m.actualBoundingBoxAscent || size * 0.75, desc = m.actualBoundingBoxDescent || size * 0.22;
+  const left = o.align === "right" ? x - m.width : o.align === "center" ? x - m.width/2 : x;
+  if (str.trim()) BOXES.push({ x:left, y:y-asc, w:m.width, h:asc+desc, s:str.slice(0,26) });
+  c.fillText(str, x, y);
+  c.restore();
+  return m.width;
+}
+function measure(c, str, o){
+  o = o || {};
+  c.save(); c.font = `${o.weight||500} ${o.size||24}px ${o.mono ? "'JetBrains Mono',monospace" : "'Inter Tight',sans-serif"}`;
+  if ("letterSpacing" in c) c.letterSpacing = (o.track||0)+"px";
+  const w = c.measureText(str).width; c.restore(); return w;
+}
+function wrap(c, str, maxw, o){
+  const words = str.split(" "), out = []; let line = "";
+  for (const w of words){
+    const t = line ? line + " " + w : w;
+    if (measure(c, t, o) > maxw && line){ out.push(line); line = w; } else line = t;
+  }
+  if (line) out.push(line);
+  return out;
+}
+/* TICK occupies space. If he is not in the collision set he is free to stand
+   on top of a paragraph, which is exactly the fault this check exists to catch. */
+function tick(c, o){
+  const w = (o.s || 120) * 0.62, h = o.s || 120;
+  BOXES.push({ x:o.x - w/2 - 8, y:o.y - h*0.62, w:w + 16, h:h*1.28, s:"[TICK]" });
+  return MASCOT.draw(c, o);
+}
+
+function ground(c){
+  c.fillStyle = BLACK; c.fillRect(0,0,W,H);
+  c.strokeStyle = "rgba(242,239,233,.045)"; c.lineWidth = 1;
+  c.beginPath();
+  for (let x = M; x < W-M+1; x += (W-M*2)/12){ c.moveTo(x+.5, M); c.lineTo(x+.5, H-M); }
+  c.stroke();
+}
+function head(c, eyebrow, n){
+  c.beginPath(); c.arc(M+6, M-8, 6, 0, 7); c.fillStyle = ACID; c.fill();
+  tx(c, eyebrow, M+24, M, { size:19, mono:true, track:4.6, color:DIM });
+  tx(c, n + " / 4", W-M, M, { size:19, mono:true, track:4.6, color:DIM, align:"right" });
+  c.fillStyle = LINE; c.fillRect(M, M+22, W-M*2, 1);
+}
+function foot(c){
+  c.fillStyle = LINE; c.fillRect(M, H-M-52, W-M*2, 1);
+  BRAND.mark(c, M, H-M-38, 36, BRAND.THEMES.black);
+  tx(c, "POLYMARCT", M+50, H-M-10, { size:26, weight:600, track:-.8 });
+  tx(c, "$PMARC // ON ARC", W-M, H-M-10, { size:17, mono:true, track:3.6, color:DIM, align:"right" });
+}
+function rule(c, x, y, w, a){ c.fillStyle = `rgba(242,239,233,${a||.13})`; c.fillRect(x, y, w, 1); }
+
+/* a real market card, the same one the product draws */
+function card(c, x, y, w, m, highlight){
+  const h = w * 0.66;
+  c.save();
+  c.shadowColor = "rgba(0,0,0,.75)"; c.shadowBlur = 60; c.shadowOffsetY = 26;
+  c.fillStyle = "#0D0F11"; c.fillRect(x, y, w, h);
+  c.restore();
+  c.strokeStyle = highlight ? ACID : LINE2; c.lineWidth = highlight ? 2 : 1.5;
+  c.strokeRect(x+.5, y+.5, w, h);
+  tx(c, m.cat, x+26, y+46, { size:16, mono:true, track:3.6, color:DIM });
+  wrap(c, m.q, w-52, { size:26, weight:500 }).slice(0,2)
+    .forEach((l,i)=> tx(c, l, x+26, y+96+i*32, { size:26, weight:500, track:-.6 }));
+  const pct = Math.round(m.yes*100) + "%";
+  tx(c, pct, x+26, y+h-72, { size:72, weight:600, track:-3.6 });
+  const pw = measure(c, pct, { size:72, weight:600, track:-3.6 });
+  tx(c, "YES", x+26+pw+18, y+h-72, { size:20, mono:true, track:5, color:DIM });
+  c.fillStyle = "rgba(242,239,233,.12)"; c.fillRect(x+26, y+h-52, w-52, 8);
+  c.fillStyle = ACID; c.fillRect(x+26, y+h-52, (w-52)*m.yes, 8);
+  tx(c, BRAND.hexa ? "" : "", 0, 0, {});
+  tx(c, "$4.82M VOL   //   18,421 TRADERS", x+26, y+h-20, { size:15, mono:true, track:2, color:DIM });
+  return { priceAt: { x: x+26+pw*0.5, y: y+h-96 }, h };
+}
+
+const CARDS = [];
+const card4 = (name, draw) => CARDS.push({ name, draw });
+
+/* 01 — the number on a card is the odds */
+card4("01-tick-what-the-number-means", c => {
+  ground(c); head(c, "TICK EXPLAINS", 1);
+  tx(c, "That number is the odds.", M, 190, { size:58, weight:600, track:-2.4 });
+
+  const m = PM.get("btc-125k");
+  const cx = M, cy = 280, cw = 720;
+  const info = card(c, cx, cy, cw, m, true);
+
+  tick(c, { x: 1300, y: 584, s: 238, pose:"point", dir:"left", expr:"focus", tick:"up", t:0, blink:false });
+  MASCOT.pointerLine(c, { x: 1228, y: 568 }, info.priceAt);
+
+  const tx0 = 1060;
+  tx(c, "67 cents", tx0, 250, { size:44, weight:600, track:-1.8, color:ACID });
+  wrap(c, "is what the market charges to take YES. It is not a fee and not a guess: it is the price of a share that pays one dollar if this happens.",
+    W-M-tx0, { size:20, mono:true, track:1 })
+    .forEach((l,i)=> tx(c, l, tx0, 296+i*30, { size:20, mono:true, track:1, color:DIM }));
+  foot(c);
+});
+
+/* 02 — a move means somebody learned something */
+card4("02-tick-why-it-moves", c => {
+  ground(c); head(c, "TICK EXPLAINS", 2);
+  tx(c, "When it moves, somebody", M, 182, { size:54, weight:600, track:-2.2 });
+  tx(c, "knew something first.", M, 238, { size:54, weight:600, track:-2.2, color:ACID });
+
+  const ax = M, aw = 900, ay = 640, ah = 300;
+  const s = [.44,.45,.43,.46,.45,.51,.60,.59,.62,.61,.65,.73,.72,.75,.77];
+  const px = i => ax + (i/(s.length-1))*aw, py = v => ay - (v-.38)*ah*2.0;
+  c.beginPath(); c.moveTo(ax, ay);
+  s.forEach((v,i)=> c.lineTo(px(i), py(v)));
+  c.lineTo(px(s.length-1), ay); c.closePath();
+  c.fillStyle = "rgba(204,255,0,.08)"; c.fill();
+  c.beginPath(); s.forEach((v,i)=> i?c.lineTo(px(i),py(v)):c.moveTo(px(i),py(v)));
+  c.strokeStyle = ACID; c.lineWidth = 3.5; c.stroke();
+  rule(c, ax, ay, aw, .30);
+  const jump = 6;
+  c.beginPath(); c.arc(px(jump), py(s[jump]), 9, 0, 7); c.fillStyle = ACID; c.fill();
+
+  tick(c, { x: 1330, y: 620, s: 240, pose:"point", dir:"left", expr:"wide", tick:"up", t:0.4, blink:false });
+  MASCOT.pointerLine(c, { x: 1256, y: 604 }, { x: px(jump), y: py(s[jump]) - 16 });
+
+  tx(c, "+8 cents in four minutes", 1160, 250, { size:26, weight:600, track:-.8 });
+  wrap(c, "Volume ran four times normal and one fill took the offer. The price did not drift, it was moved.",
+    W-M-1160, { size:19, mono:true, track:1 })
+    .forEach((l,i)=> tx(c, l, 1160, 290+i*28, { size:19, mono:true, track:1, color:DIM }));
+  tx(c, "A price is the only opinion that costs money to hold.", M, 760, { size:22, mono:true, track:1.2, color:DIM });
+  foot(c);
+});
+
+/* 03 — what a trade actually buys */
+card4("03-tick-what-you-are-buying", c => {
+  ground(c); head(c, "TICK EXPLAINS", 3);
+  tx(c, "You are buying a dollar,", M, 182, { size:54, weight:600, track:-2.2 });
+  tx(c, "on condition.", M, 238, { size:54, weight:600, track:-2.2 });
+
+  const px0 = M, py0 = 320, pw = 620, ph = 380;
+  c.save();
+  c.shadowColor = "rgba(0,0,0,.75)"; c.shadowBlur = 60; c.shadowOffsetY = 26;
+  c.fillStyle = "#0D0F11"; c.fillRect(px0, py0, pw, ph);
+  c.restore();
+  c.strokeStyle = LINE2; c.lineWidth = 1.5; c.strokeRect(px0+.5, py0+.5, pw, ph);
+  tx(c, "TAKE A POSITION", px0+26, py0+44, { size:16, mono:true, track:3.6, color:DIM });
+  c.fillStyle = ACID; c.fillRect(px0+26, py0+70, (pw-52)/2-4, 54);
+  tx(c, "TAKE YES  67¢", px0+40, py0+104, { size:22, mono:true, weight:700, track:2, color:BLACK });
+  c.fillStyle = "#171A1E"; c.fillRect(px0+26+(pw-52)/2+4, py0+70, (pw-52)/2-4, 54);
+  tx(c, "TAKE NO  33¢", px0+40+(pw-52)/2+4, py0+104, { size:22, mono:true, track:2, color:NO });
+  const rows = [["AMOUNT","100.00 USDC"],["SHARES","149.25 YES"],["PAYOUT IF CORRECT","$149.25"],["MAX LOSS","$100.00"]];
+  rows.forEach(([k,v],i)=>{
+    const y = py0+170+i*46;
+    tx(c, k, px0+26, y, { size:16, mono:true, track:2.6, color:DIM });
+    tx(c, v, px0+pw-26, y, { size:20, mono:true, color: i===2?ACID : i===3?NO : WHITE, align:"right" });
+    rule(c, px0+26, y+14, pw-52, .10);
+  });
+
+  tick(c, { x: 880, y: 500, s: 230, pose:"point", dir:"left", expr:"focus", tick:"up", t:0.9, blink:false });
+  MASCOT.pointerLine(c, { x: 786, y: 484 }, { x: px0+pw-120, y: py0+170+2*46-8 });
+
+  const t0 = 1050;
+  tx(c, "$100 buys 149.25 shares", t0, 320, { size:28, weight:600, track:-.9 });
+  wrap(c, "Each share pays exactly one dollar if the answer is yes, and nothing if it is no. That is the whole instrument. There is no leverage hiding in it.",
+    W-M-t0, { size:19, mono:true, track:1 })
+    .forEach((l,i)=> tx(c, l, t0, 362+i*28, { size:19, mono:true, track:1, color:DIM }));
+  tx(c, "SETTLES IN USDC ON ARC", t0, 560, { size:19, mono:true, track:4, color:ACID });
+  tx(c, "NO OTHER ASSET, NO OTHER CHAIN", t0, 592, { size:17, mono:true, track:2.6, color:DIM });
+  foot(c);
+});
+
+/* 04 — the verdict is not ours */
+card4("04-tick-reality-decides", c => {
+  ground(c); head(c, "TICK EXPLAINS", 4);
+  tx(c, "We do not decide", M, 182, { size:54, weight:600, track:-2.2 });
+  tx(c, "who was right.", M, 238, { size:54, weight:600, track:-2.2 });
+
+  const bx = M, by = 330, bw = 700, bh = 300;
+  c.save();
+  c.shadowColor = "rgba(0,0,0,.75)"; c.shadowBlur = 60; c.shadowOffsetY = 26;
+  c.fillStyle = "#0D0F11"; c.fillRect(bx, by, bw, bh);
+  c.restore();
+  c.strokeStyle = ACID; c.lineWidth = 2; c.strokeRect(bx+.5, by+.5, bw, bh);
+  tx(c, "THE VERDICT ENGINE", bx+26, by+44, { size:16, mono:true, track:3.6, color:DIM });
+  tx(c, "RESOLVED", bx+bw-26, by+44, { size:16, mono:true, track:3.6, color:ACID, align:"right" });
+  [["SOURCE","COINBASE BTC-USD, HOURLY CLOSE"],
+   ["READING","$125,412.00"],
+   ["DISPUTE WINDOW","24H, CLOSED, NO CHALLENGE"],
+   ["SETTLEMENT","USDC ON ARC"]].forEach(([k,v],i)=>{
+    const y = by+110+i*50;
+    tx(c, k, bx+26, y, { size:16, mono:true, track:2.6, color:DIM });
+    tx(c, v, bx+bw-26, y, { size:18, mono:true, color: i===1?ACID:WHITE, align:"right" });
+    rule(c, bx+26, y+16, bw-52, .10);
+  });
+
+  tick(c, { x: 962, y: 500, s: 240, pose:"hold", dir:"right", expr:"happy", tick:"up", label:"YES", t:0, blink:false });
+
+  const t0 = 1150;
+  tx(c, "The source was named", t0, 340, { size:26, weight:600, track:-.8 });
+  tx(c, "before anyone traded.", t0, 372, { size:26, weight:600, track:-.8, color:ACID });
+  wrap(c, "Criteria, source and deadline are fixed and hashed at creation. The question cannot change after trading opens, and the reading that produced the verdict is published with it.",
+    W-M-t0, { size:18, mono:true, track:1 })
+    .forEach((l,i)=> tx(c, l, t0, 420+i*26, { size:18, mono:true, track:1, color:DIM }));
+  tx(c, "A wrong verdict is worse than no verdict, so an unanswerable market voids at cost.",
+    M, 760, { size:20, mono:true, track:1.1, color:DIM });
+  foot(c);
+});
+
+/* ---------------- export ---------------- */
+function overlaps(a,b){
+  const p = 2;
+  return a.x < b.x+b.w-p && a.x+a.w-p > b.x && a.y < b.y+b.h-p && a.y+a.h-p > b.y;
+}
+const MC = {
+  render(i, cv){
+    BOXES = [];
+    const c = cv.getContext("2d");
+    CARDS[i].draw(c);
+    const hits = [];
+    for (let a=0;a<BOXES.length;a++)
+      for (let b=a+1;b<BOXES.length;b++)
+        if (overlaps(BOXES[a],BOXES[b])) hits.push(BOXES[a].s+" X "+BOXES[b].s);
+    return hits;
+  },
+  collisions(){
+    const rep = CARDS.map((card,i)=>{
+      const cv = document.createElement("canvas"); cv.width=W; cv.height=H;
+      const h = this.render(i, cv);
+      return card.name + ": " + (h.length ? h.length+" OVERLAP -> "+h.join(" | ") : "clean");
+    });
+    document.getElementById("log").textContent = rep.join("\n");
+    return rep;
+  },
+  async all(preview){
+    await document.fonts.ready;
+    const grid = document.getElementById("grid"); grid.innerHTML = "";
+    let bad = 0;
+    for (let i=0;i<CARDS.length;i++){
+      const cv = document.createElement("canvas"); cv.width=W; cv.height=H;
+      if (this.render(i, cv).length) bad++;
+      BRAND.grain(cv.getContext("2d"), W, H, 10);
+      if (preview) grid.appendChild(cv);
+      else {
+        const b = await new Promise(r=>cv.toBlob(r,"image/png"));
+        for (let a=0;a<4;a++){
+          try { const r = await fetch("/_save/tick-"+CARDS[i].name+".png",{method:"POST",body:b}); if (r.ok) break; }
+          catch(e){ await new Promise(r=>setTimeout(r,250*(a+1))); }
+        }
+      }
+      window.__mc = { done:i+1, total:CARDS.length, overlaps:bad };
+    }
+    return window.__mc;
+  },
+  cards: CARDS
+};
+window.MC = MC;
+document.fonts.ready.then(()=>{ MC.collisions(); MC.all(true); });
+</script>
+</body>
+</html>

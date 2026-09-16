@@ -42,6 +42,14 @@ python -m http.server 8080
 - `assets/js/ui.js` — header, footer, market card, sparkline, ticker, modals, toasts, terminal mode
 - `assets/js/field.js` — the hero live market field canvas
 
+## TICK
+
+The mascot is the acid bar from the mark, stood up. He is drawn from one
+function, `brand/mascot.js`, so he is the same character everywhere. Character
+sheet, his four explainer cards and his film are in `png/Tick/` and
+`dist/polymarct-05-tick-1080p.mp4`. The rules that keep him consistent are in
+`png/Tick/README.txt`.
+
 ## The backend
 
 With the server running, the site is a working market rather than a picture of

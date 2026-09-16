@@ -104,6 +104,26 @@ Geometry is duplicated in five places and they must stay in sync:
 `mark()` in `brand/brand-render.js`, `drawMark()` in `brand/motion/motion.js`.
 Change it in one place and regenerate; do not hand-edit five copies.
 
+## 5b. The mascot — TICK
+
+TICK is the acid bar from the mark, stood up and given a face. A tick is the
+smallest move a price can make, and in the logo that bar **is** the last price
+sitting in the gap between the two sides of the book.
+
+He is one function, `brand/mascot.js`, so every still and every frame of every
+film comes from the same character:
+
+    MASCOT.draw(ctx, { x, y, s, pose, dir, expr, tick, label, t })
+    MASCOT.pointerLine(ctx, fromHand, toThing)
+
+Never redraw him by hand. Rules that do not change: body always acid, visor
+always graphite, eyes and arms always warm white, he floats because a price
+does not walk, and he never covers the number he is pointing at. Poses: idle,
+point, cheer, think, confused, hold, press. He is in the collision set of the
+exporters, so he cannot stand on a paragraph.
+
+He explains, he does not sell. No exclamation marks, no predictions of his own.
+
 ## 6. Asset pipelines
 
 All exporters run in the browser against `tools/serve.py`, which writes POSTed
@@ -114,7 +134,9 @@ files to `tools/out/`.
 | Logo, icons, og-image | `/brand/export-logo.html` | `LOGOS.all()` |
 | Social pack | `/brand/export.html` | `EXPORT.all()` |
 | Twitter set (10 explainers) | `/brand/export-twitter.html` | `TW.all()`, and `TW.collisions()` must say clean for all ten |
-| Films → frames | `/brand/motion/0X-*.html?rec=1&pause=1` | `RENDER.run({fps:30})` |
+| TICK cards | `/brand/export-mascot.html` | `MC.all()`, `MC.collisions()` must read clean |
+| TICK character sheet | `/brand/mascot-sheet.html` | renders and posts itself |
+| Films → frames | `/brand/motion/0X-*.html?rec=1` | `RENDER.run({fps:30})`, then ffmpeg |
 
 Then `python tools/build_png.py` assembles `png/` and the contact sheets.
 Compress big PNGs with Pillow `quantize(256)`; it cuts ~60% with no visible loss.

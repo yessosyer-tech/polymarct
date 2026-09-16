@@ -35,9 +35,10 @@ AUTHORED = {
     "03-social":  "Signal, hook, explainer and stat cards for posting",
     "04-profile": "X header and avatar",
     "Twitter":    "Ten explainer cards, one layout each",
+    "Tick":       "The mascot: character sheet and the cards he explains",
 }
 ORDER = ["00-contact-sheets", "01-logo", "02-icons", "03-social", "04-profile",
-         "05-link-preview", "06-film-stills", "Twitter"]
+         "05-link-preview", "06-film-stills", "Twitter", "Tick"]
 NOTES = dict(DERIVED, **AUTHORED)
 
 BLACK = (8, 9, 10)
@@ -85,6 +86,7 @@ def stills():
         ("polymarct-01-ident-1080p.mp4", "ident", [2.3, 4.4, 6.5, 9.0, 11.5, 14.2]),
         ("polymarct-02-flow-1080p.mp4", "flow", [2.6, 7.5, 9.6, 13.0, 17.0, 20.5, 24.5]),
         ("polymarct-03-network-1080p.mp4", "network", [3.0, 8.4, 11.0, 13.5, 17.5, 22.5]),
+        ("polymarct-05-tick-1080p.mp4", "tick", [1.9, 4.6, 8.2, 11.6, 15.4, 18.6, 21.3, 23.4]),
     ]
     out = os.path.join(PNG, "06-film-stills")
     n = 0
@@ -161,6 +163,7 @@ def index_txt(counts):
         "  icons           16 / 32 / 48 / 180 / 192 / 512",
         "  social          1600x900 for the timeline, 1080x1350 for feed footprint",
         "  Twitter         1600x900, ten layouts, checked for text collisions",
+        "  Tick            1600x900 cards, plus the character sheet at 1800x1150",
         "  profile         header 1500x500, avatar 400x400",
         "  link preview    1200x630",
         "  film stills     1920x1080",
@@ -192,7 +195,7 @@ def main():
     for name in ORDER:
         if name.startswith("00"):
             continue
-        cols = 3 if name in ("03-social", "06-film-stills", "04-profile", "05-link-preview", "Twitter") else 4
+        cols = 3 if name in ("03-social", "06-film-stills", "04-profile", "05-link-preview", "Twitter", "Tick") else 4
         if contact_sheet(name, NOTES[name], cols=cols):
             sheets += 1
     counts["00-contact-sheets"] = sheets

@@ -8,9 +8,10 @@ One image is one thing. Nothing here is a grid of thumbnails.
 03-social              36 files   Signal, hook, explainer and stat cards for posting
 04-profile              2 files   X header and avatar
 05-link-preview         1 files   The card a shared link shows
-06-film-stills         36 files   Frames pulled from the four films
+06-film-stills         46 files   Frames pulled from the four films
 Twitter                10 files   Ten explainer cards, one layout each
 Tick                   24 files   The mascot: one image per pose, plus the cards he explains
+Content                 8 files   Post ready cards: the real site, with TICK explaining it
 
 Sizes
   logo            16 to 1024 px square, plus lockups to 2400 wide
@@ -18,6 +19,7 @@ Sizes
   social          1600x900 for the timeline, 1080x1350 for feed footprint
   Twitter         1600x900, ten layouts, checked for text collisions
   Tick            1600x900 cards, 1200x1200 poses, plus transparent cutouts
+  Content         1600x900 post ready cards built on real site captures
   profile         header 1500x500, avatar 400x400
   link preview    1200x630
   film stills     1920x1080
@@ -29,6 +31,9 @@ Rebuilding
   python tools/tick_poses.py   one image per mascot pose
   python tools/tick_cards.py   the four mascot explainer cards
   python tools/tick_film.py    the mascot film, straight to MP4
+  python tools/shots.py        photograph the real site, headless
+  python tools/tick_content.py the post ready content cards
+  python tools/tick_tour.py    the site tour film, straight to MP4
 
 Rules that travel with these files
   no promised returns, no guaranteed, no risk free, no APY

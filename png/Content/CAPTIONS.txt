@@ -1,0 +1,49 @@
+POLYMARCT // CONTENT CARDS, WHAT TO SAY WITH THEM
+
+Post one a day. Never lead with the token. Never promise a return.
+
+01-i-am-tick.png
+    I am TICK. I live in the gap between the two sides of the book.
+    A tick is the smallest move a price can make.
+    POLYMARCT is a prediction market on Arc. Let me show you around.
+
+02-the-number.png
+    67% is not an opinion. It is what people paid.
+    Every headline gives you a take. A market gives you a number that
+    somebody is standing behind with money.
+
+03-what-you-buy.png
+    You are not betting against a house.
+    67c buys a share that pays $1 if the answer is yes, and nothing if it
+    is not. The other side of your trade is another trader.
+    Collateral and settlement are USDC on Arc. Nothing else is accepted.
+
+04-the-board.png
+    One question. Two outcomes. Infinite information.
+    Crypto, macro, politics, sports, tech, culture, and Arc itself.
+
+05-reality-decides.png
+    The source is named before anyone trades.
+    Criterion and data source are written into the market at creation and
+    cannot change after trading opens. Then a bonded dispute window.
+
+06-usdc-on-arc.png
+    Fixed unit of account. Cheap frequent price updates. Settlement that
+    does not move after the verdict.
+    That is why this is on Arc, and why USDC is the only asset it takes.
+
+07-public-record.png
+    Consensus is cheap. Conviction is expensive.
+    Ranked on risk adjusted performance across resolved markets, not on
+    volume. A leaderboard that rewards size rewards wash trading.
+
+08-make-a-market.png
+    If the question is real, you can publish it.
+    One answer, a deadline, a source anyone can read, and your bond.
+    Vague questions are rejected by the validator, not by an opinion.
+
+Rules that travel with these files
+    no promised returns, no guaranteed, no risk free, no APY
+    the product is the hook, the token is never the hook
+    USDC on Arc is the only asset the product accepts
+    every screenshot here is the real site, keep it that way

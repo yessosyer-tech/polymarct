@@ -36,9 +36,10 @@ AUTHORED = {
     "04-profile": "X header and avatar",
     "Twitter":    "Ten explainer cards, one layout each",
     "Tick":       "The mascot: one image per pose, plus the cards he explains",
+    "Content":    "Post ready cards: the real site, with TICK explaining it",
 }
 ORDER = ["01-logo", "02-icons", "03-social", "04-profile",
-         "05-link-preview", "06-film-stills", "Twitter", "Tick"]
+         "05-link-preview", "06-film-stills", "Twitter", "Tick", "Content"]
 NOTES = dict(DERIVED, **AUTHORED)
 
 BLACK = (8, 9, 10)
@@ -87,6 +88,7 @@ def stills():
         ("polymarct-02-flow-1080p.mp4", "flow", [2.6, 7.5, 9.6, 13.0, 17.0, 20.5, 24.5]),
         ("polymarct-03-network-1080p.mp4", "network", [3.0, 8.4, 11.0, 13.5, 17.5, 22.5]),
         ("polymarct-05-tick-1080p.mp4", "tick", [1.9, 4.6, 8.2, 11.6, 15.4, 18.6, 21.3, 23.4]),
+        ("polymarct-06-tour-1080p.mp4", "tour", [2.9, 6.2, 10.0, 14.4, 19.2, 22.6, 26.0, 29.8, 33.0, 36.4]),
     ]
     out = os.path.join(PNG, "06-film-stills")
     n = 0
@@ -124,6 +126,7 @@ def index_txt(counts):
         "  social          1600x900 for the timeline, 1080x1350 for feed footprint",
         "  Twitter         1600x900, ten layouts, checked for text collisions",
         "  Tick            1600x900 cards, 1200x1200 poses, plus transparent cutouts",
+        "  Content         1600x900 post ready cards built on real site captures",
         "  profile         header 1500x500, avatar 400x400",
         "  link preview    1200x630",
         "  film stills     1920x1080",
@@ -135,6 +138,9 @@ def index_txt(counts):
         "  python tools/tick_poses.py   one image per mascot pose",
         "  python tools/tick_cards.py   the four mascot explainer cards",
         "  python tools/tick_film.py    the mascot film, straight to MP4",
+        "  python tools/shots.py        photograph the real site, headless",
+        "  python tools/tick_content.py the post ready content cards",
+        "  python tools/tick_tour.py    the site tour film, straight to MP4",
         "",
         "Rules that travel with these files",
         "  no promised returns, no guaranteed, no risk free, no APY",

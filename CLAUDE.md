@@ -135,6 +135,12 @@ wide, confused. His bounding box is registered in the collision checker, which
 is how we caught him standing on a paragraph.
 
 He explains, he does not sell. No exclamation marks, no predictions of his own.
+His opening line, in the tour film and on the first content card, is "I am TICK."
+
+**Never mock up the product.** `tools/shots.py` drives headless Chrome over a
+local server and writes one tall PNG per page, so both the content cards and the
+tour film stand on real pixels of the real site. If a page changes, re-shoot and
+rebuild rather than redrawing it. The captures are scratch, they are gitignored.
 
 ## 6. Asset pipelines
 
@@ -152,6 +158,9 @@ TICK is the exception and the direction of travel: he never touches a browser.
 
 | Asset | Command |
 |---|---|
+| Site captures | `python tools/shots.py`, headless Chrome, tall PNGs into `tools/_shots/` |
+| Content cards | `python tools/tick_content.py`, real captures + TICK, every card must report clean |
+| Site tour film | `python tools/tick_tour.py`, `--preview` first |
 | TICK poses | `python tools/tick_poses.py`, one image per pose plus cutouts |
 | TICK cards | `python tools/tick_cards.py`, every card must report clean |
 | TICK film (MP4) | `python tools/tick_film.py`, `--preview` for eight frames first |

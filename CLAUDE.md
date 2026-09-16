@@ -110,17 +110,29 @@ TICK is the acid bar from the mark, stood up and given a face. A tick is the
 smallest move a price can make, and in the logo that bar **is** the last price
 sitting in the gap between the two sides of the book.
 
-He is one function, `brand/mascot.js`, so every still and every frame of every
-film comes from the same character:
+At the end of his film he climbs back into that gap and becomes the bar. That
+shot is the mascot's whole argument, do not cut it.
 
-    MASCOT.draw(ctx, { x, y, s, pose, dir, expr, tick, label, t })
-    MASCOT.pointerLine(ctx, fromHand, toThing)
+**He is Python, not a browser.** One module draws him everywhere:
 
-Never redraw him by hand. Rules that do not change: body always acid, visor
-always graphite, eyes and arms always warm white, he floats because a price
-does not walk, and he never covers the number he is pointing at. Poses: idle,
-point, cheer, think, confused, hold, press. He is in the collision set of the
-exporters, so he cannot stand on a paragraph.
+    tools/tick.py    tick.draw(img, x, y, s, pose, dir, expr, label, t) -> hand
+                     tick.pointer(img, hand, target)
+    tools/tick_cards.py   the four explainer cards and the character sheet
+    tools/tick_film.py    the 24s film straight to MP4 (Pillow frames, a stdlib
+                          `wave` synth for the score, ffmpeg to mux)
+
+An earlier TICK lived in `brand/mascot.js` and was rendered through HTML pages.
+The operator called that version too simple and banned the HTML route outright,
+so the JS mascot, its sheet page, its exporter and `brand/motion/05-tick.html`
+are deleted. Do not bring them back.
+
+Never redraw him by hand. Rules that do not change: body acid, visor graphite,
+eyes and arms warm white, the data dot on his price tape electric blue, nothing
+else. He floats, because a price does not walk. He never covers the number he
+points at, and he points with the dashed acid line, never a drawn arrow. Poses:
+idle, point, think, cheer, hold, press, confused. Faces: neutral, happy, focus,
+wide, confused. His bounding box is registered in the collision checker, which
+is how we caught him standing on a paragraph.
 
 He explains, he does not sell. No exclamation marks, no predictions of his own.
 
@@ -134,9 +146,14 @@ files to `tools/out/`.
 | Logo, icons, og-image | `/brand/export-logo.html` | `LOGOS.all()` |
 | Social pack | `/brand/export.html` | `EXPORT.all()` |
 | Twitter set (10 explainers) | `/brand/export-twitter.html` | `TW.all()`, and `TW.collisions()` must say clean for all ten |
-| TICK cards | `/brand/export-mascot.html` | `MC.all()`, `MC.collisions()` must read clean |
-| TICK character sheet | `/brand/mascot-sheet.html` | renders and posts itself |
 | Films → frames | `/brand/motion/0X-*.html?rec=1` | `RENDER.run({fps:30})`, then ffmpeg |
+
+TICK is the exception and the direction of travel: he never touches a browser.
+
+| Asset | Command |
+|---|---|
+| TICK cards + sheet | `python tools/tick_cards.py`, every card must report clean |
+| TICK film (MP4) | `python tools/tick_film.py`, `--preview` for eight frames first |
 
 Then `python tools/build_png.py` assembles `png/` and the contact sheets.
 Compress big PNGs with Pillow `quantize(256)`; it cuts ~60% with no visible loss.

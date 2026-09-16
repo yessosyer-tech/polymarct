@@ -44,11 +44,13 @@ python -m http.server 8080
 
 ## TICK
 
-The mascot is the acid bar from the mark, stood up. He is drawn from one
-function, `brand/mascot.js`, so he is the same character everywhere. Character
-sheet, his four explainer cards and his film are in `png/Tick/` and
-`dist/polymarct-05-tick-1080p.mp4`. The rules that keep him consistent are in
-`png/Tick/README.txt`.
+The mascot is the acid bar from the mark, stood up and given a face, and at the
+end of his film he climbs back into the gap and becomes the bar again. He is
+drawn by one Python module, `tools/tick.py`, so he is the same character
+everywhere. `python tools/tick_cards.py` builds his sheet and his four explainer
+cards into `png/Tick/`; `python tools/tick_film.py` renders
+`dist/polymarct-05-tick-1080p.mp4` directly, no browser anywhere in the chain.
+The rules that keep him consistent are in `png/Tick/README.txt`.
 
 ## The backend
 

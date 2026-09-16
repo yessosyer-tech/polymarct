@@ -25,9 +25,8 @@
 
 <div id="stage">
   <canvas class="layer" id="cv"></canvas>
-  <div class="layer scan" id="scan"></div>
-  <div class="layer grain"></div>
-  <div class="layer vig"></div>
+  <!-- grain, scanlines and vignette are painted onto the canvas, not layered in
+       CSS, so what you see is exactly what the recording contains -->
 </div>
 
 <div class="badge" id="badge">M MUTE // V VOICE OFF // R RESTART</div>
@@ -40,6 +39,8 @@
 </div>
 
 <script src="motion.js"></script>
+<script src="recorder.js"></script>
+<script src="render.js"></script>
 <script>
 /* ============================================================
    POLYMARCT // TRAILER
@@ -73,6 +74,44 @@ const QUESTIONS = [
 
 /* post state, driven by the shots */
 const P = { shake:0, chroma:0, invert:0, flash:0, scale:1, blur:0 };
+
+/* ---------- film treatment, baked into the frame ---------- */
+const NOISE = (() => {
+  const c = document.createElement("canvas"); c.width = c.height = 256;
+  const x = c.getContext("2d"), img = x.createImageData(256,256), d = img.data;
+  for (let i=0;i<d.length;i+=4){
+    const v = 128 + (Math.random()-.5)*255;
+    d[i]=d[i+1]=d[i+2]=v; d[i+3]=255;
+  }
+  x.putImageData(img,0,0);
+  return c;
+})();
+const SCAN = (() => {
+  const c = document.createElement("canvas"); c.width = 4; c.height = 4;
+  const x = c.getContext("2d");
+  x.fillStyle = "rgba(242,239,233,.075)"; x.fillRect(0,0,4,1);
+  return c;
+})();
+let VIG = null;
+function treatment(c){
+  if (!VIG){
+    VIG = c.createRadialGradient(960,540,300, 960,540,1180);
+    VIG.addColorStop(0,"rgba(0,0,0,0)");
+    VIG.addColorStop(1,"rgba(0,0,0,.72)");
+  }
+  c.save();
+  c.globalAlpha = .16;
+  c.fillStyle = c.createPattern(SCAN, "repeat");
+  c.fillRect(0,0,1920,1080);
+  c.globalAlpha = .07;
+  c.globalCompositeOperation = "overlay";
+  const ox = (Math.random()*256)|0, oy = (Math.random()*256)|0;
+  for (let x=-ox; x<1920; x+=256) for (let y=-oy; y<1080; y+=256) c.drawImage(NOISE, x, y);
+  c.globalCompositeOperation = "source-over";
+  c.globalAlpha = 1;
+  c.fillStyle = VIG; c.fillRect(0,0,1920,1080);
+  c.restore();
+}
 
 /* ---------- drawing helpers ---------- */
 function bg(c, col){ octx.fillStyle = col; octx.fillRect(0,0,1920,1080); }
@@ -198,7 +237,7 @@ for (let i=0;i<6;i++){
 for (let i=0;i<9;i++){
   shot(1.76 + i*0.3, 0.3, p => {
     bg(0, BLACK);
-    field.draw(octx, performance.now()/1000, { speed: 9, alpha: .5, blur:.35 });
+    field.draw(octx, NOW, { speed: 9, alpha: .5, blur:.35 });
     grid(0, .04, 120);
     const q = QUESTIONS[i % QUESTIONS.length];
     const dir = i % 2 ? 1 : -1;
@@ -216,7 +255,7 @@ for (let i=0;i<9;i++){
 shot(4.46, 1.5, p => {
   bg(0, BLACK);
   grid(0, .05, 120);
-  field.draw(octx, performance.now()/1000, { speed: 1.2, alpha: .35 });
+  field.draw(octx, NOW, { speed: 1.2, alpha: .35 });
   const w = E.outExpo(clamp(p*3,0,1));
   octx.save(); octx.beginPath(); octx.rect(0,0,1920*w,1080); octx.clip();
   centerType("EVERYONE HAS", 150, WHITE, 520);
@@ -269,7 +308,7 @@ shot(9.5, 1.1, p => {
 const MONT = [
   [0.44, p => {                                   // the deck
     bg(0, BLACK); grid(0,.04,120);
-    field.draw(octx, performance.now()/1000, { speed:3, alpha:.4, blur:.2 });
+    field.draw(octx, NOW, { speed:3, alpha:.4, blur:.2 });
     for (let i=0;i<4;i++){
       const off2 = i*0.16;
       marketCard(300 + i*460, 540 + (i%2?70:-40), 420,
@@ -350,7 +389,7 @@ shot(13.38, 1.5, p => {
 /* --- 14.88 REAL MONEY. REAL CONVICTION. --- */
 shot(14.88, 1.5, p => {
   bg(0, BLACK); grid(0,.05,120);
-  field.draw(octx, performance.now()/1000, { speed:2.4, alpha:.4, blur:.2 });
+  field.draw(octx, NOW, { speed:2.4, alpha:.4, blur:.2 });
   centerType("REAL MONEY.", 138, WHITE, 480);
   centerType("REAL CONVICTION.", 138, WHITE, 620);
   const a = clamp(inv(p,.4,.75),0,1);
@@ -453,7 +492,7 @@ shot(25.42, 1.3, p => {
 shot(26.72, 3.28, p => {
   bg(0, BLACK);
   grid(0, .05, 120);
-  field.draw(octx, performance.now()/1000, { speed:.5, alpha:.3 });
+  field.draw(octx, NOW, { speed:.5, alpha:.3 });
   const s = 300;
   MO.drawMark(octx, 960-s/2, 300-s/2, s, { draw:1, shift:Math.sin(p*5)*1.6 });
   const w = E.outExpo(clamp(inv(p,.08,.4),0,1));
@@ -473,6 +512,7 @@ shot(26.72, 3.28, p => {
    RENDER
    ============================================================ */
 function renderAt(t){
+  NOW = t;
   P.chroma = 0; P.shake = 0; P.flash = 0;
   let cur = null;
   for (const s of SHOTS) if (t >= s.t && t < s.t + s.dur) cur = s;
@@ -494,6 +534,7 @@ function renderAt(t){
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
   }
+  treatment(ctx);
 }
 
 /* ============================================================
@@ -686,6 +727,7 @@ function start(){
   startVoice();
   t0 = performance.now()/1000;
   running = true;
+  if (recorder && recorder.auto) recorder.start();
 }
 
 function restart(){
@@ -707,18 +749,45 @@ addEventListener("keydown", e => {
   if (e.key === "h" || e.key === "H") document.getElementById("badge").classList.toggle("gone");
 });
 
+const recorder = REC.attach({
+  canvas: cv, duration: DUR, name: "polymarct-trailer",
+  get audioNode(){ return master; }, get audioContext(){ return AC; }
+});
+
 let lastT = 0;
+let NOW = 0;   /* film time, so an offline render matches a live play */
 (function loop(){
   requestAnimationFrame(loop);
   if (!running){ renderAt(lastT); return; }
   let t = performance.now()/1000 - t0;
-  if (t > DUR){ restart(); t = 0; }
+  if (t > DUR){
+    if (recorder && recorder.auto){ running = false; renderAt(DUR - 0.01); recorder.stop(); return; }
+    restart(); t = 0;
+  }
   lastT = t;
   renderAt(t);
 })();
 
 /* seek(t) holds a frame for review and for frame-accurate capture */
 window.seek = t => { lastT = t; running = false; renderAt(t); };
+window.FILM = {
+  canvas: cv, duration: DUR, name: "polymarct-trailer",
+  seek: t => renderAt(t),
+  /* the score, rendered offline so the audio is sample exact and silent gaps stay silent */
+  renderAudio: async () => {
+    const OAC = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, Math.ceil(44100*(DUR+1.5)), 44100);
+    const prevAC = AC, prevMaster = master;
+    AC = OAC;
+    master = OAC.createGain(); master.gain.value = 0.85;
+    const comp = OAC.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.ratio.value = 7; comp.attack.value = .003; comp.release.value = .18;
+    master.connect(comp).connect(OAC.destination);
+    scheduleScore(0.05);
+    const buf = await OAC.startRendering();
+    AC = prevAC; master = prevMaster;
+    return buf;
+  }
+};
 renderAt(0);
 if (window.speechSynthesis) speechSynthesis.getVoices();
 </script>

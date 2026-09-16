@@ -110,6 +110,34 @@
     </div>
   </div>
 
+
+  <div class="panel" style="margin-top:28px">
+    <div class="panel-h"><span>DOWNLOAD THE FILES</span><span class="mono acid">MP4 // H.264</span></div>
+    <p class="muted" style="font-size:13px;line-height:1.7;margin:0 0 18px">Rendered frame by frame from the same code that runs on this page, not screen captured, so there are no dropped frames and no recorder artefacts. The trailer carries its score; the three product films are silent by design.</p>
+    <div class="tblwrap">
+      <table class="tbl">
+        <thead><tr><th>FILE</th><th>FORMAT</th><th>LENGTH</th><th class="r">SIZE</th><th class="r">USE</th></tr></thead>
+        <tbody>
+          <tr><td><a class="acid" href="../dist/polymarct-trailer-1080p.mp4" download>polymarct-trailer-1080p.mp4</a></td>
+              <td class="mono">1920&times;1080 // 60FPS // AAC</td><td class="mono">0:30</td><td class="r mono">24 MB</td><td class="r mono muted">MASTER</td></tr>
+          <tr><td><a href="../dist/polymarct-trailer-1080p-small.mp4" download>polymarct-trailer-1080p-small.mp4</a></td>
+              <td class="mono">1920&times;1080 // 60FPS // AAC</td><td class="mono">0:30</td><td class="r mono">7 MB</td><td class="r mono muted">CHAT, EMAIL</td></tr>
+          <tr><td><a href="../dist/polymarct-trailer-vertical-1080x1920.mp4" download>polymarct-trailer-vertical-1080x1920.mp4</a></td>
+              <td class="mono">1080&times;1920 // 60FPS // AAC</td><td class="mono">0:30</td><td class="r mono">7 MB</td><td class="r mono muted">STORIES, REELS</td></tr>
+          <tr><td><a href="../dist/polymarct-trailer-square-1080.mp4" download>polymarct-trailer-square-1080.mp4</a></td>
+              <td class="mono">1080&times;1080 // 60FPS // AAC</td><td class="mono">0:30</td><td class="r mono">7 MB</td><td class="r mono muted">FEED</td></tr>
+          <tr><td><a href="../dist/polymarct-01-ident-1080p.mp4" download>polymarct-01-ident-1080p.mp4</a></td>
+              <td class="mono">1920&times;1080 // 30FPS // SILENT</td><td class="mono">0:15</td><td class="r mono">7 MB</td><td class="r mono muted">OPENER</td></tr>
+          <tr><td><a href="../dist/polymarct-02-flow-1080p.mp4" download>polymarct-02-flow-1080p.mp4</a></td>
+              <td class="mono">1920&times;1080 // 30FPS // SILENT</td><td class="mono">0:26</td><td class="r mono">10 MB</td><td class="r mono muted">PRODUCT STORY</td></tr>
+          <tr><td><a href="../dist/polymarct-03-network-1080p.mp4" download>polymarct-03-network-1080p.mp4</a></td>
+              <td class="mono">1920&times;1080 // 30FPS // SILENT</td><td class="mono">0:24</td><td class="r mono">10 MB</td><td class="r mono muted">DATA STORY</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="meta" style="margin-top:16px;line-height:2">RE-RENDER: python tools/serve.py, OPEN A FILM WITH ?rec=1&amp;pause=1, THEN RENDER.run({fps:60}) IN THE CONSOLE // FRAMES LAND IN tools/out // ffmpeg -framerate 60 -i name_%05d.jpg -c:v libx264 -crf 17 -pix_fmt yuv420p out.mp4</p>
+  </div>
+
   <div class="panel" style="margin-top:28px">
     <div class="panel-h">HOW TO CAPTURE</div>
     <div class="kv"><span class="k">CLEAN PLATE</span><span>ADD ?rec=1 TO HIDE THE TRANSPORT</span></div>

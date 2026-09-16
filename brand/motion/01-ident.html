@@ -79,6 +79,8 @@
 </div>
 
 <script src="motion.js"></script>
+<script src="baker.js"></script>
+<script src="render.js"></script>
 <script>
 const bg = MO.hidpi(document.getElementById("bg"));
 const fx = MO.hidpi(document.getElementById("fx"));
@@ -118,7 +120,7 @@ function paint(t){
 
 function scene(el, on, o){ el.style.opacity = on ? (o===undefined?1:o) : 0; }
 
-MO.mount({
+const __mounted = MO.mount({
   duration: 15,
   title: "IDENT",
   /* zero the stage before every frame, so each beat only adds what it owns */
@@ -256,6 +258,23 @@ MO.mount({
 
 /* the canvas is repainted on its own clock so the field never stutters */
 (function raf(now){ paint((now||0)/1000); requestAnimationFrame(raf); })();
+
+const __tl = __mounted.tl;
+
+/* ---------- offline export ----------
+   Compose the film's canvases plus its DOM type into one frame so it can be
+   rendered to a real video file. See render.js. */
+const OUT = document.createElement("canvas"); OUT.width = 1920; OUT.height = 1080;
+window.FILM = {
+  canvas: OUT,
+  duration: 15,
+  name: "polymarct-01-ident",
+  seek(t){
+    __tl.seek(t);
+    paint(t);
+    BAKE.compose(OUT, { canvases: [document.getElementById("bg"), document.getElementById("fx")], root: document.getElementById("stage") });
+  }
+};
 </script>
 </body>
 </html>

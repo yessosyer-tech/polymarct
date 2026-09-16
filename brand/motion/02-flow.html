@@ -121,6 +121,8 @@
 </div>
 
 <script src="motion.js"></script>
+<script src="baker.js"></script>
+<script src="render.js"></script>
 <script>
 const bg = MO.hidpi(document.getElementById("bg"));
 const field = new MO.Field(1920,1080,"flow",170);
@@ -193,7 +195,7 @@ function cursor(x,y,a,press){
   c.style.opacity=a; c.style.transform=`translate(${x}px,${y}px) scale(${press?.7:1})`;
 }
 
-MO.mount({
+const __mounted = MO.mount({
   duration: 26,
   title: "THE FLOW",
   reset(){
@@ -353,16 +355,33 @@ MO.mount({
   }
 });
 
-(function raf(now){
+function paintBG(t){
   bg.clearRect(0,0,1920,1080);
   bg.strokeStyle="rgba(242,239,233,.04)"; bg.lineWidth=1;
   bg.beginPath();
   for(let x=0;x<1920;x+=160){ bg.moveTo(x+.5,0); bg.lineTo(x+.5,1080); }
   for(let y=0;y<1080;y+=160){ bg.moveTo(0,y+.5); bg.lineTo(1920,y+.5); }
   bg.stroke();
-  field.draw(bg,(now||0)/1000,{ speed:S.speed, alpha:.55, blur:clamp((S.speed-1)/14,0,.4) });
-  requestAnimationFrame(raf);
-})();
+  field.draw(bg,t,{ speed:S.speed, alpha:.55, blur:clamp((S.speed-1)/14,0,.4) });
+}
+(function raf(now){ paintBG((now||0)/1000); requestAnimationFrame(raf); })();
+
+const __tl = __mounted.tl;
+
+/* ---------- offline export ----------
+   Compose the film's canvases plus its DOM type into one frame so it can be
+   rendered to a real video file. See render.js. */
+const OUT = document.createElement("canvas"); OUT.width = 1920; OUT.height = 1080;
+window.FILM = {
+  canvas: OUT,
+  duration: 26,
+  name: "polymarct-02-flow",
+  seek(t){
+    __tl.seek(t);
+    paintBG(t);
+    BAKE.compose(OUT, { canvases: [document.getElementById("bg")], root: document.getElementById("stage") });
+  }
+};
 </script>
 </body>
 </html>

@@ -74,6 +74,8 @@
 </div>
 
 <script src="motion.js"></script>
+<script src="baker.js"></script>
+<script src="render.js"></script>
 <script>
 const net = MO.hidpi(document.getElementById("net"));
 const fx  = MO.hidpi(document.getElementById("fx"));
@@ -196,7 +198,7 @@ $("themes").innerHTML = THEMES.map(([n,v,r])=>`
 function corners(a){ ["c1","c2","c3","c4"].forEach(id=>$(id).style.opacity = String(a)); }
 function scene(el,on){ el.style.opacity = on?1:0; }
 
-MO.mount({
+const __mounted = MO.mount({
   duration: 24,
   title: "THE NETWORK",
   reset(){
@@ -288,10 +290,7 @@ MO.mount({
   }
 });
 
-(function raf(now){
-  const t = (now||0)/1000;
-  physics();
-  drawNet(t);
+function paintFX(t){
   fx.clearRect(0,0,1920,1080);
   if (MARK.s > 1){
     fx.save();
@@ -299,8 +298,31 @@ MO.mount({
     MO.drawMark(fx, 960 - MARK.s/2, 380 - MARK.s/2, MARK.s, { draw:1, shift:Math.sin(t*1.6)*1.4 });
     fx.restore();
   }
+}
+(function raf(now){
+  const t = (now||0)/1000;
+  physics();
+  drawNet(t);
+  paintFX(t);
   requestAnimationFrame(raf);
 })();
+
+const __tl = __mounted.tl;
+
+/* ---------- offline export ----------
+   Compose the film's canvases plus its DOM type into one frame so it can be
+   rendered to a real video file. See render.js. */
+const OUT = document.createElement("canvas"); OUT.width = 1920; OUT.height = 1080;
+window.FILM = {
+  canvas: OUT,
+  duration: 24,
+  name: "polymarct-03-network",
+  seek(t){
+    __tl.seek(t);
+    physics(); drawNet(t); paintFX(t);
+    BAKE.compose(OUT, { canvases: [document.getElementById("net"), document.getElementById("fx")], root: document.getElementById("stage") });
+  }
+};
 </script>
 </body>
 </html>

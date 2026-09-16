@@ -42,6 +42,12 @@ python -m http.server 8080
 - `assets/js/ui.js` — header, footer, market card, sparkline, ticker, modals, toasts, terminal mode
 - `assets/js/field.js` — the hero live market field canvas
 
+## Video files
+
+Finished MP4s live in `dist/`: the trailer at 1080p60 with its score, plus vertical, square and a small share cut, and the three product films at 1080p30, silent.
+
+They are not screen recordings. `tools/serve.py` serves the site and accepts POSTed frames; `brand/motion/render.js` seeks each film to an exact time, reads the canvas and posts the frame, and `brand/motion/baker.js` paints the films DOM type onto that canvas so nothing is missing. The score is rendered through an OfflineAudioContext, so it is sample exact. ffmpeg muxes the result. Every run is identical.
+
 ## The asset rule
 
 USDC on Arc is the only asset the product accepts: collateral, trades, fees, bonds and payouts. No ETH, no second token, no other chain, no card, no swap, no bridge-in. $PMARC is not a payment asset and is never needed to trade. See `ARCHITECTURE.md` section 0.1.

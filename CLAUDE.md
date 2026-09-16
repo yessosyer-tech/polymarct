@@ -152,13 +152,16 @@ TICK is the exception and the direction of travel: he never touches a browser.
 
 | Asset | Command |
 |---|---|
-| TICK cards + sheet | `python tools/tick_cards.py`, every card must report clean |
+| TICK poses | `python tools/tick_poses.py`, one image per pose plus cutouts |
+| TICK cards | `python tools/tick_cards.py`, every card must report clean |
 | TICK film (MP4) | `python tools/tick_film.py`, `--preview` for eight frames first |
 
-Then `python tools/build_png.py` assembles `png/` and the contact sheets.
+Then `python tools/build_png.py` assembles `png/`. **No contact sheets.** The
+operator asked for content as separate full images, not thumbnails tiled into
+one picture, so every file in `png/` is one thing filling its own frame.
 Compress big PNGs with Pillow `quantize(256)`; it cuts ~60% with no visible loss.
 
-`build_png.py` distinguishes **derived** folders (01, 02, 05, 06, contact sheets;
+`build_png.py` distinguishes **derived** folders (01, 02, 05, 06;
 rebuilt every run) from **authored** ones (03-social, 04-profile, Twitter; the
 files live there and nowhere else). Never wipe an authored folder.
 

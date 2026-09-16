@@ -47,8 +47,9 @@ python -m http.server 8080
 The mascot is the acid bar from the mark, stood up and given a face, and at the
 end of his film he climbs back into the gap and becomes the bar again. He is
 drawn by one Python module, `tools/tick.py`, so he is the same character
-everywhere. `python tools/tick_cards.py` builds his sheet and his four explainer
-cards into `png/Tick/`; `python tools/tick_film.py` renders
+everywhere. `python tools/tick_poses.py` writes one full image per pose plus a transparent
+cutout of each, and `python tools/tick_cards.py` builds his four explainer cards,
+both into `png/Tick/`; `python tools/tick_film.py` renders
 `dist/polymarct-05-tick-1080p.mp4` directly, no browser anywhere in the chain.
 The rules that keep him consistent are in `png/Tick/README.txt`.
 

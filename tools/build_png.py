@@ -1,8 +1,9 @@
 """Build the PNG deliverable tree.
 
 Everything anyone needs to use lands in png/ as flat PNG files in numbered
-folders, with a contact sheet per folder so the whole set can be browsed in an
-image viewer. No page to open, no renderer to run.
+folders. One image is one thing, filling its own frame. No page to open, no
+renderer to run, and no contact sheets: the operator asked for the content as
+separate full images, not as five thumbnails tiled into one picture.
 
     python tools/build_png.py
 
@@ -29,15 +30,14 @@ DERIVED = {
     "02-icons":          "Favicons and app icons",
     "05-link-preview":   "The card a shared link shows",
     "06-film-stills":    "Frames pulled from the four films",
-    "00-contact-sheets": "One image per folder, everything at a glance",
 }
 AUTHORED = {
     "03-social":  "Signal, hook, explainer and stat cards for posting",
     "04-profile": "X header and avatar",
     "Twitter":    "Ten explainer cards, one layout each",
-    "Tick":       "The mascot: character sheet and the cards he explains",
+    "Tick":       "The mascot: one image per pose, plus the cards he explains",
 }
-ORDER = ["00-contact-sheets", "01-logo", "02-icons", "03-social", "04-profile",
+ORDER = ["01-logo", "02-icons", "03-social", "04-profile",
          "05-link-preview", "06-film-stills", "Twitter", "Tick"]
 NOTES = dict(DERIVED, **AUTHORED)
 
@@ -106,52 +106,12 @@ def stills():
     return n
 
 
-def contact_sheet(folder, title, cols=4, cell=520):
-    files = sorted(glob.glob(os.path.join(PNG, folder, "*.png")))
-    if not files:
-        return None
-    pad, head, label = 24, 150, 34
-    rows = (len(files) + cols - 1) // cols
-    w = pad + cols * (cell + pad)
-    h = head + rows * (cell + label + pad) + pad
-    sheet = Image.new("RGB", (w, h), BLACK)
-    d = ImageDraw.Draw(sheet)
-    d.text((pad, 44), "POLYMARCT", font=font(46), fill=WHITE)
-    d.text((pad + 300, 58), title.upper(), font=font(20, True), fill=DIM)
-    d.text((pad, 104), "%d FILES  //  %s" % (len(files), folder), font=font(18, True), fill=ACID)
-    d.line([(pad, head - 18), (w - pad, head - 18)], fill=(40, 43, 46))
-
-    for i, f in enumerate(files):
-        im = Image.open(f).convert("RGBA")
-        im.thumbnail((cell, cell), Image.LANCZOS)
-        x = pad + (i % cols) * (cell + pad)
-        y = head + (i // cols) * (cell + label + pad)
-        tile = Image.new("RGB", (cell, cell), (18, 20, 23))
-        td = ImageDraw.Draw(tile)
-        for cx in range(0, cell, 24):
-            for cy in range(0, cell, 24):
-                if (cx // 24 + cy // 24) % 2 == 0:
-                    td.rectangle([cx, cy, cx + 23, cy + 23], fill=(24, 27, 30))
-        tile.paste(im, ((cell - im.width) // 2, (cell - im.height) // 2), im)
-        sheet.paste(tile, (x, y))
-        d.rectangle([x, y, x + cell - 1, y + cell - 1], outline=(46, 49, 52))
-        name = os.path.basename(f)[:-4]
-        if len(name) > 34:
-            name = name[:33] + "\u2026"
-        d.text((x, y + cell + 9), name, font=font(15, True), fill=DIM)
-
-    out = os.path.join(PNG, "00-contact-sheets", folder + ".png")
-    sheet.convert("RGB").quantize(colors=256, method=Image.MEDIANCUT,
-                                  dither=Image.FLOYDSTEINBERG).save(out, optimize=True)
-    return out
-
-
 def index_txt(counts):
     lines = [
         "POLYMARCT // PNG DELIVERABLES",
         "",
         "Everything here is a PNG. Open the folder, use the file.",
-        "The contact sheets in 00 show every image in a folder at a glance.",
+        "One image is one thing. Nothing here is a grid of thumbnails.",
         "",
     ]
     for name in ORDER:
@@ -163,15 +123,18 @@ def index_txt(counts):
         "  icons           16 / 32 / 48 / 180 / 192 / 512",
         "  social          1600x900 for the timeline, 1080x1350 for feed footprint",
         "  Twitter         1600x900, ten layouts, checked for text collisions",
-        "  Tick            1600x900 cards, plus the character sheet at 1800x1150",
+        "  Tick            1600x900 cards, 1200x1200 poses, plus transparent cutouts",
         "  profile         header 1500x500, avatar 400x400",
         "  link preview    1200x630",
         "  film stills     1920x1080",
         "",
         "Rebuilding",
         "  python tools/build_png.py",
-        "  01, 02, 05, 06 and the contact sheets are rebuilt from the repo.",
-        "  03, 04 and Twitter are authored in place and left alone.",
+        "  01, 02, 05 and 06 are rebuilt from the repo.",
+        "  03, 04, Twitter and Tick are authored in place and left alone.",
+        "  python tools/tick_poses.py   one image per mascot pose",
+        "  python tools/tick_cards.py   the four mascot explainer cards",
+        "  python tools/tick_film.py    the mascot film, straight to MP4",
         "",
         "Rules that travel with these files",
         "  no promised returns, no guaranteed, no risk free, no APY",
@@ -190,15 +153,6 @@ def main():
     counts["06-film-stills"] = stills()
     for name in AUTHORED:
         counts[name] = len(glob.glob(os.path.join(PNG, name, "*.png")))
-
-    sheets = 0
-    for name in ORDER:
-        if name.startswith("00"):
-            continue
-        cols = 3 if name in ("03-social", "06-film-stills", "04-profile", "05-link-preview", "Twitter", "Tick") else 4
-        if contact_sheet(name, NOTES[name], cols=cols):
-            sheets += 1
-    counts["00-contact-sheets"] = sheets
 
     index_txt(counts)
     for name in ORDER:

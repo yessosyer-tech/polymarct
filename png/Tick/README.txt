@@ -8,7 +8,10 @@ Who he is
   At the end of his film he climbs back into the gap and becomes the bar.
 
 Files here
-  sheet.png                     the character sheet: poses, faces, scale, rules
+  One image is one thing. There is no sheet and no grid of thumbnails.
+
+  pose-01-idle.png  ... pose-10-split.png    one pose per image, 1200x1200
+  cutout-idle.png   ... cutout-split.png     the same poses, no background
   01-what-the-number-means.png  67c buys a dollar if it happens
   02-why-it-moves.png           the price moves when somebody knows first
   03-what-you-are-buying.png    shares, not a bet slip
@@ -29,7 +32,8 @@ Rules, do not break them
 How he is drawn
   One Python function draws him everywhere, so he cannot drift:
 
-    python tools/tick_cards.py     the four cards and the sheet
+    python tools/tick_poses.py     one image per pose, plus the cutouts
+    python tools/tick_cards.py     the four explainer cards
     python tools/tick_film.py      the film, straight to MP4
 
   tools/tick.py is the character itself:

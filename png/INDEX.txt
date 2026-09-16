@@ -1,9 +1,8 @@
 POLYMARCT // PNG DELIVERABLES
 
 Everything here is a PNG. Open the folder, use the file.
-The contact sheets in 00 show every image in a folder at a glance.
+One image is one thing. Nothing here is a grid of thumbnails.
 
-00-contact-sheets       8 files   One image per folder, everything at a glance
 01-logo                30 files   The mark, lockups and wordmarks
 02-icons                6 files   Favicons and app icons
 03-social              36 files   Signal, hook, explainer and stat cards for posting
@@ -11,22 +10,25 @@ The contact sheets in 00 show every image in a folder at a glance.
 05-link-preview         1 files   The card a shared link shows
 06-film-stills         36 files   Frames pulled from the four films
 Twitter                10 files   Ten explainer cards, one layout each
-Tick                    5 files   The mascot: character sheet and the cards he explains
+Tick                   24 files   The mascot: one image per pose, plus the cards he explains
 
 Sizes
   logo            16 to 1024 px square, plus lockups to 2400 wide
   icons           16 / 32 / 48 / 180 / 192 / 512
   social          1600x900 for the timeline, 1080x1350 for feed footprint
   Twitter         1600x900, ten layouts, checked for text collisions
-  Tick            1600x900 cards, plus the character sheet at 1800x1150
+  Tick            1600x900 cards, 1200x1200 poses, plus transparent cutouts
   profile         header 1500x500, avatar 400x400
   link preview    1200x630
   film stills     1920x1080
 
 Rebuilding
   python tools/build_png.py
-  01, 02, 05, 06 and the contact sheets are rebuilt from the repo.
-  03, 04 and Twitter are authored in place and left alone.
+  01, 02, 05 and 06 are rebuilt from the repo.
+  03, 04, Twitter and Tick are authored in place and left alone.
+  python tools/tick_poses.py   one image per mascot pose
+  python tools/tick_cards.py   the four mascot explainer cards
+  python tools/tick_film.py    the mascot film, straight to MP4
 
 Rules that travel with these files
   no promised returns, no guaranteed, no risk free, no APY

@@ -51,8 +51,34 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/engine.js"></script>
 <script src="assets/js/ui.js"></script>
+<script src="assets/js/api.js"></script>
 <script>
-UI.mount("markets.html"); PM.start(); UI.ticker(document.getElementById("ticker"));
+UI.mount("markets.html"); UI.ticker(document.getElementById("ticker"));
+
+/* With a server behind the page the prices come from the real books, and the
+   simulation stays out of the way. Without one it drives the page as before. */
+API.init().then(async live => {
+  if (!live){ PM.start(); return; }
+  try {
+    const d = await API.markets("?limit=200");
+    const by = Object.fromEntries(d.markets.map(m => [m.id, m]));
+    PM.state.markets.forEach(m => {
+      const s = by[m.id];
+      if (!s) return;
+      m.yes = s.price;
+      m.vol = s.volume / 1e6;
+      m.serverStatus = s.status;
+    });
+    render();
+    document.getElementById("count").insertAdjacentHTML("beforeend", "  //  LIVE BOOK");
+    setInterval(async () => {
+      const d2 = await API.markets("?limit=200");
+      const b2 = Object.fromEntries(d2.markets.map(m => [m.id, m]));
+      PM.state.markets.forEach(m => { if (b2[m.id]) { m.yes = b2[m.id].price; m.vol = b2[m.id].volume / 1e6; } });
+      render();
+    }, 8000);
+  } catch (e) { PM.start(); }
+});
 
 let cat = new URLSearchParams(location.search).get("cat") || "ALL";
 let sort = "moving", term = "";

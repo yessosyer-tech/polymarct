@@ -42,6 +42,26 @@ python -m http.server 8080
 - `assets/js/ui.js` — header, footer, market card, sparkline, ticker, modals, toasts, terminal mode
 - `assets/js/field.js` — the hero live market field canvas
 
+## The backend
+
+With the server running, the site is a working market rather than a picture of
+one: accounts, a real book with slippage, positions, P&L, creation under the
+published rules, resolution with evidence, a bonded dispute window, settlement,
+and a ledger that explains every unit. Balances are demo USDC from a faucet.
+
+```bash
+python server/seed.py --reset --traders   # 50 markets, 10 demo traders
+python server/app.py 8100                 # site and API on one port
+python server/test_server.py              # 61 unit tests
+python server/test_api.py 8100            # 28 end to end tests
+python tools/audit.py                     # static audit
+```
+
+Set `POLYMARCT_ADMIN_TOKEN` to enable resolution; without it the admin routes
+are closed. The static host cannot run a process, so `polymarct.xyz` stays in
+demo mode and the front end falls back to the browser simulation. Findings and
+open items are in `AUDIT.md`.
+
 ## PNG is the house format
 
 Every image asset ships as PNG, and that is the standing rule for anything added later: icons, marks, lockups, wordmarks, the link preview and the whole social pack. PNG opens anywhere, holds the acid exactly and needs no renderer. The SVG set stays in `brand/logo/` for print and for the web, but nothing on the site depends on it.

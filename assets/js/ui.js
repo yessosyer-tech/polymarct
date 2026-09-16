@@ -8,6 +8,7 @@ const UI = (() => {
     ["SIGNALS", "signals.html"],
     ["MAP", "map.html"],
     ["ARC", "arc.html"],
+    ["PORTFOLIO", "portfolio.html"],
     ["LEADERBOARD", "leaderboard.html"],
     ["$PMARC", "token.html"]
   ];
@@ -49,7 +50,7 @@ const UI = (() => {
           <p class="lede" style="font-size:14px;max-width:34ch">The leading prediction market on Arc. Price the future, follow the signal, let the market decide.</p>
         </div>
         <div><h4>MARKET</h4>
-          <a href="markets.html">All markets</a><a href="discover.html">Discover</a><a href="signals.html">The Signal</a><a href="map.html">Market Map</a><a href="create.html">Create a market</a></div>
+          <a href="markets.html">All markets</a><a href="portfolio.html">Portfolio</a><a href="discover.html">Discover</a><a href="signals.html">The Signal</a><a href="map.html">Market Map</a><a href="create.html">Create a market</a></div>
         <div><h4>ECOSYSTEM</h4>
           <a href="arc.html">Arc // Live</a><a href="leaderboard.html">Conviction Index</a><a href="token.html">$PMARC</a><a href="verdict.html">The Verdict Engine</a></div>
         <div><h4>INFORMATION</h4>

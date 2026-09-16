@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PORTFOLIO // POLYMARCT</title>
+<meta name="description" content="Your positions, balance and settled results on Polymarct.">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-180.png">
+<meta property="og:image" content="assets/og-image.png">
+<meta name="twitter:image" content="assets/og-image.png">
+<meta name="theme-color" content="#08090A">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/polymarct.css">
+</head>
+<body>
+
+<section class="sec sec--flush" style="padding-bottom:26px"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span>PORTFOLIO</div>
+  <h1 class="display--sm" style="margin-top:16px">What you are<br>holding.</h1>
+</div></section>
+
+<section class="sec sec--flush" style="padding-top:22px"><div class="wrap">
+  <div id="out"></div>
+</div></section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/api.js"></script>
+<script>
+UI.mount("portfolio.html");
+
+const out = document.getElementById("out");
+
+function offline(){
+  out.innerHTML = `<div class="empty">
+    <h3>NO SERVER BEHIND THIS PAGE.</h3>
+    <p>Positions live in the market engine, not in the browser. Run the server and this page fills itself.</p>
+    <p class="mono" style="margin-top:18px;color:var(--acid)">python server/app.py</p></div>`;
+}
+
+function signedOut(){
+  out.innerHTML = `<div class="empty">
+    <h3>NOTHING HERE YET.</h3>
+    <p>Sign in and your positions appear here as you take them.</p></div>`;
+  const b = document.createElement("button");
+  b.className = "btn btn--primary";
+  b.style.marginTop = "20px";
+  b.textContent = "SIGN IN";
+  b.onclick = () => API.authSheet(load);
+  out.querySelector(".empty").appendChild(b);
+}
+
+function row(p){
+  const side = p.yes_shares >= p.no_shares ? "YES" : "NO";
+  const shares = Math.max(p.yes_shares, p.no_shares);
+  const pnl = p.status === "settled" ? p.realised : p.unrealised;
+  const open = p.status === "open" || p.status === "closed";
+  return `<tr>
+    <td><a href="market.html?m=${p.market}">${p.question}</a>
+        <div class="meta" style="margin-top:4px">${p.category} // ${p.status.toUpperCase()}${p.outcome ? " // " + p.outcome : ""}</div></td>
+    <td class="mono ${side === "YES" ? "acid" : "down"}">${side}</td>
+    <td class="r mono">${API.fmtShares(shares)}</td>
+    <td class="r mono">${open ? Math.round(p.price*100) + "¢" : "—"}</td>
+    <td class="r mono">${API.fmtUsd(p.cost)}</td>
+    <td class="r mono">${open ? API.fmtUsd(p.mark) : "—"}</td>
+    <td class="r mono ${pnl >= 0 ? "acid" : "down"}">${pnl >= 0 ? "+" : ""}${API.fmtUsd(pnl)}</td>
+  </tr>`;
+}
+
+async function load(){
+  if (!API.live) return offline();
+  await API.refresh();
+  if (!API.me) return signedOut();
+  const p = await API.portfolio();
+  const open = p.positions.filter(x => x.status === "open" || x.status === "closed");
+  const done = p.positions.filter(x => x.status === "resolved" || x.status === "settled");
+  const unreal = open.reduce((s, x) => s + x.unrealised, 0);
+  const real = done.reduce((s, x) => s + x.realised, 0);
+
+  out.innerHTML = `
+    <div class="statgrid" style="margin-bottom:28px">
+      <div class="stat"><div class="k">BALANCE</div><div class="v num">${API.fmtUsd(p.balance)}</div><div class="d">demo USDC</div></div>
+      <div class="stat"><div class="k">POSITION VALUE</div><div class="v num">${API.fmtUsd(p.position_value)}</div><div class="d">marked at the current book</div></div>
+      <div class="stat"><div class="k">EQUITY</div><div class="v num">${API.fmtUsd(p.equity)}</div><div class="d">balance plus positions</div></div>
+      <div class="stat"><div class="k">OPEN P&amp;L</div><div class="v num ${unreal >= 0 ? "acid" : "down"}">${unreal >= 0 ? "+" : ""}${API.fmtUsd(unreal)}</div><div class="d">unrealised</div></div>
+      <div class="stat"><div class="k">SETTLED</div><div class="v num ${real >= 0 ? "acid" : "down"}">${real >= 0 ? "+" : ""}${API.fmtUsd(real)}</div><div class="d">${done.length} resolved</div></div>
+    </div>
+
+    <div class="sec-head" style="margin-bottom:14px"><div><div class="idx">OPEN</div><h2 class="h3">Positions still live.</h2></div></div>
+    ${open.length ? `<div class="tblwrap"><table class="tbl">
+      <thead><tr><th>MARKET</th><th>SIDE</th><th class="r">SHARES</th><th class="r">PRICE</th><th class="r">COST</th><th class="r">MARK</th><th class="r">P&amp;L</th></tr></thead>
+      <tbody>${open.map(row).join("")}</tbody></table></div>`
+      : `<div class="empty"><h3>QUIET.</h3><p>No open positions. That is a choice too.</p></div>`}
+
+    ${done.length ? `<div class="sec-head" style="margin:34px 0 14px"><div><div class="idx">SETTLED</div><h2 class="h3">The verdict is in.</h2></div></div>
+      <div class="tblwrap"><table class="tbl">
+      <thead><tr><th>MARKET</th><th>SIDE</th><th class="r">SHARES</th><th class="r">PRICE</th><th class="r">COST</th><th class="r">MARK</th><th class="r">RESULT</th></tr></thead>
+      <tbody>${done.map(row).join("")}</tbody></table></div>` : ""}
+
+    <div class="sec-head" style="margin:34px 0 14px"><div><div class="idx">LEDGER</div><h2 class="h3">Every movement, explained.</h2></div></div>
+    <div class="tblwrap"><table class="tbl" id="ledger"><tbody><tr><td class="mono muted">loading</td></tr></tbody></table></div>
+    <p class="meta" style="margin-top:16px">BALANCES ARE DEMO USDC ISSUED BY A FAUCET. NO WALLET, NO CHAIN, NO REAL FUNDS.</p>`;
+
+  const l = await API.ledger();
+  document.getElementById("ledger").innerHTML =
+    `<thead><tr><th>WHEN</th><th>REASON</th><th>MARKET</th><th class="r">AMOUNT</th></tr></thead><tbody>` +
+    l.entries.map(e => `<tr>
+      <td class="mono muted">${new Date(e.created_at*1000).toLocaleString("en-GB")}</td>
+      <td class="mono">${e.reason.replace(/_/g, " ").toUpperCase()}</td>
+      <td class="mono muted">${e.ref || "—"}</td>
+      <td class="r mono ${e.delta >= 0 ? "acid" : "down"}">${e.delta >= 0 ? "+" : ""}${API.fmtUsd(e.delta)}</td>
+    </tr>`).join("") + "</tbody>";
+}
+
+API.init().then(load);
+</script>
+</body>
+</html>

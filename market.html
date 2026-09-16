@@ -142,8 +142,11 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/engine.js"></script>
 <script src="assets/js/ui.js"></script>
+<script src="assets/js/api.js"></script>
 <script>
-UI.mount("markets.html"); PM.start();
+UI.mount("markets.html");
+/* the simulation only drives this page when no server does */
+API.init().then(live => { if (!live) PM.start(); });
 
 const id = new URLSearchParams(location.search).get("m") || "btc-125k";
 const m = PM.get(id);
@@ -157,13 +160,15 @@ document.getElementById("r-src").textContent = m.src;
 document.getElementById("r-crit").textContent = m.crit;
 
 let side = "YES";
+let serverMarket = null;   /* set once a server answers; the head renders from it */
 function paintHead(){
   const mo = PM.momentum(m);
   document.getElementById("chips").innerHTML =
     `<span class="chip">${m.cat}</span>
      ${PM.isEarly(m)?`<span class="chip chip--solid">EARLY</span>`:""}
      <span class="chip ${mo.tone==="acid"?"chip--acid":mo.tone==="blue"?"chip--blue":""}">${mo.label}</span>
-     <span class="chip">${PM.fmt.leftLong(m.ends)} LEFT</span>`;
+     <span class="chip">${PM.fmt.leftLong(m.ends)} LEFT</span>
+     ${serverMarket ? `<span class="chip chip--acid">LIVE BOOK // ${serverMarket.status.toUpperCase()}</span>` : ""}`;
   document.getElementById("p").textContent = Math.round(m.yes*100) + "%";
   const d = document.getElementById("d24");
   d.textContent = PM.fmt.signed(m.d24) + " / 24H";
@@ -190,15 +195,77 @@ function paintTrade(){
   document.getElementById("t-ml").textContent = "$" + amt.toFixed(2);
   document.getElementById("side-l").textContent = side;
 }
-document.getElementById("submit").onclick = ()=>{
+document.getElementById("submit").onclick = async ()=>{
+  const b = document.getElementById("submit");
   const amt = parseFloat(document.getElementById("amt").value)||0;
   if (amt<=0) { UI.toast("ENTER AN AMOUNT"); return; }
-  const b = document.getElementById("submit");
-  b.textContent = "READING THE MARKET"; b.disabled = true;
-  setTimeout(()=>{ b.textContent="ENTER MARKET"; b.disabled=false;
-    UI.toast("POSITION CONFIRMED // " + amt.toFixed(0) + " USDC " + side);
-  }, 900);
+
+  if (!API.live){
+    b.textContent = "READING THE MARKET"; b.disabled = true;
+    setTimeout(()=>{ b.textContent="ENTER MARKET"; b.disabled=false;
+      UI.toast("POSITION CONFIRMED // " + amt.toFixed(0) + " USDC " + side + " // DEMO");
+    }, 900);
+    return;
+  }
+
+  API.requireUser(async ()=>{
+    b.textContent = "READING THE MARKET"; b.disabled = true;
+    try {
+      const r = await API.trade(m.id, side, "buy", amt);
+      await API.refresh(); API.paintAccount();
+      UI.toast("POSITION CONFIRMED // " + API.fmtShares(r.shares) + " " + side +
+               " AT " + Math.round(r.price_after*100) + "¢");
+      await syncFromServer();
+    } catch (e) {
+      UI.toast(e.message.toUpperCase());
+    }
+    b.textContent = "ENTER MARKET"; b.disabled = false;
+  });
 };
+
+/* When a server is answering, the price on screen is the server's price and
+   the panel quotes against the real book rather than the simulation. */
+async function syncFromServer(){
+  if (!API.live) return;
+  try {
+    serverMarket = await API.market(m.id);
+  } catch (e) { return; }
+  m.yes = serverMarket.price;
+  m.vol = serverMarket.volume / 1e6;
+  m.hist.push(m.yes); if (m.hist.length > 96) m.hist.shift();
+  paintHead(); drawChart();
+
+  if (serverMarket.trades && serverMarket.trades.length){
+    feed.length = 0;
+    serverMarket.trades.slice(0,12).forEach(t => feed.push({
+      w: t.handle, s: t.side, v: t.collateral/1e6, ts: t.created_at*1000 }));
+    paintTrades();
+  }
+}
+
+async function quoteFromServer(){
+  if (!API.live) { paintTrade(); return; }
+  const amt = Math.max(0, parseFloat(document.getElementById("amt").value)||0);
+  if (!amt) { paintTrade(); return; }
+  try {
+    const q = await API.quote(m.id, side, "buy", amt);
+    document.getElementById("t-sh").textContent = API.fmtShares(q.shares) + " " + side;
+    document.getElementById("t-px").textContent = Math.round(q.avg_price*100) + "¢";
+    document.getElementById("t-po").textContent = "$" + API.money(q.shares).toFixed(2);
+    document.getElementById("t-ml").textContent = "$" + amt.toFixed(2);
+    document.getElementById("side-l").textContent = side;
+  } catch (e) { paintTrade(); }
+}
+
+API.init().then(async ()=>{
+  if (!API.live) return;
+  document.querySelectorAll("[data-side]").forEach(x => x.addEventListener("click", quoteFromServer));
+  document.querySelectorAll("[data-amt]").forEach(x => x.addEventListener("click", quoteFromServer));
+  document.getElementById("amt").addEventListener("input", quoteFromServer);
+  await syncFromServer();
+  await quoteFromServer();
+  setInterval(syncFromServer, 6000);
+});
 
 document.getElementById("why").onclick = ()=>UI.whyModal(m.id);
 document.getElementById("follow").onclick = e=>{ e.target.textContent="FOLLOWING"; UI.toast("WATCHING SIGNAL // " + m.cat); };
@@ -343,7 +410,7 @@ document.getElementById("related").innerHTML = PM.state.markets
 
 paintHead(); drawChart(); paintDepth(); paintHist(); UI.bindLive();
 
-PM.subscribe(()=>{ paintHead(); drawChart(); });
+PM.subscribe(()=>{ if (!API.live){ paintHead(); drawChart(); } });
 setInterval(()=>{ pushTrade(); paintTrades(); paintHist(); }, 4200);
 setInterval(paintDepth, 6000);
 </script>

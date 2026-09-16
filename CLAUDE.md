@@ -11,11 +11,18 @@ information market, not a betting app: "the Bloomberg of prediction markets".
 - **Live:** https://polymarct.xyz (GitHub Pages, repo `yessosyer-tech/polymarct`,
   custom domain, HTTPS enforced, `www` redirects to apex)
 - **Deploy:** `git push` to `main`. That is the whole pipeline.
-- **Local:** `python tools/serve.py` then http://localhost:8099
+- **Local, full product:** `python server/seed.py --reset --traders` then
+  `python server/app.py 8100`
+- **Local, static only:** `python tools/serve.py` then http://localhost:8099
 
-**Everything on the site is demonstration state.** No wallet, no orders, no
-settlement, no funds. Market numbers are generated in the browser by a
-simulation. Never present it as live trading.
+**Two modes.** With `server/app.py` running the site is a working market:
+accounts, a real constant product book with slippage, positions, P&L, market
+creation, resolution, a bonded dispute window and settlement, all recorded in
+SQLite with an append only ledger. Without it, the front end falls back to the
+browser simulation, which is what the public static host runs.
+
+**Balances are demo USDC from a faucet.** No wallet, no chain, no custody, no
+real funds anywhere. Never present it as live trading. See `AUDIT.md`.
 
 ## 2. Stack
 
@@ -31,7 +38,16 @@ assets/js/engine.js           seeded history, live tick sim, momentum, Future In
 assets/js/ui.js               header, footer, cards, ticker, modals, terminal mode
 assets/js/field.js            hero canvas
 brand/                        exporters and the motion films (machinery, not deliverables)
-tools/serve.py                dev server, also accepts POSTed frames at /_save/<name>
+server/amm.py                 binary constant product maker, integer money
+server/core.py                storage, accounts, the append only ledger
+server/markets.py             create, trade, close, resolve, settle, dispute
+server/app.py                 HTTP server, JSON API, static site, rate limits
+server/seed.py                imports the 50 markets from assets/js/data.js
+server/test_server.py         61 unit tests    python server/test_server.py
+server/test_api.py            28 API tests     python server/test_api.py 8100
+assets/js/api.js              front end client, falls back to the simulation
+tools/audit.py                static audit     python tools/audit.py
+tools/serve.py                static dev server, accepts POSTed frames at /_save/<name>
 tools/build_png.py            builds the png/ deliverable tree
 png/                          THE DELIVERABLE: every asset as PNG in numbered folders
 dist/                         four finished MP4 films
@@ -124,10 +140,11 @@ files live there and nowhere else). Never wipe an authored folder.
 
 ## 8. What is NOT built
 
-No contracts, no AMM, no orderbook, no oracle, no indexer, no wallet connection,
-no compliance gating. `ARCHITECTURE.md` specifies all of it, including the
-jurisdiction/KYC work that must exist before real money. Do not imply any of it
-is running.
+No contracts, no chain integration, no custody, no wallet, no KYC or
+jurisdiction gating, no decentralised oracle. Resolution is a human with
+`POLYMARCT_ADMIN_TOKEN`. The public host is static, so the live site runs in
+demo mode. `ARCHITECTURE.md` specifies the on chain work, `AUDIT.md` lists what
+is open. Real money is blocked on legal clearance, not on code.
 
 ## 9. Working alongside someone else
 

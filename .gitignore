@@ -1,1 +1,6 @@
 tools/out/
+server/*.db
+server/*.db-wal
+server/*.db-shm
+__pycache__/
+*.pyc

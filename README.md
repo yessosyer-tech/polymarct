@@ -49,11 +49,23 @@ Every image asset ships as PNG, and that is the standing rule for anything added
 - `brand/logo/png/` — mark at 16 to 1024 transparent, on graphite and on warm white, one colour versions, lockups and wordmarks. Rebuild with `/brand/export-logo.html` and `LOGOS.all()`.
 - `assets/icons/` — favicon 16/32/48, apple touch 180, 192 and 512. Declared on every page.
 - `assets/og-image.png` — 1200x630 link preview, wired as `og:image` and `twitter:image`.
-- `content/` — the social pack, see below.
+- `png/` — **the deliverable tree**, see below.
 
-## Content pack
+## png/ is the deliverable
 
-`content/` holds 38 PNGs for social: signal cards from live markets, hook cards, explainers, stat cards, portrait cuts and the profile kit, plus `CONTENT-PLAN.md` with the posting rhythm, the caption formulas and the rules. Regenerate with `/brand/export.html` and `EXPORT.all()`.
+Everything that gets handed over is a PNG in a numbered folder. No page to open, no renderer to run.
+
+| Folder | Files | What it is |
+|---|---|---|
+| `00-contact-sheets` | 6 | One sheet per folder, every image at a glance |
+| `01-logo` | 30 | Mark 16 to 1024, transparent, on graphite, on warm white, one colour, lockups, wordmarks |
+| `02-icons` | 6 | Favicon 16/32/48, apple touch 180, 192, 512 |
+| `03-social` | 36 | Signal, hook, explainer, stat and portrait cards, plus `POSTING-PLAN.txt` |
+| `04-profile` | 2 | X header 1500x500, avatar 400x400 |
+| `05-link-preview` | 1 | og-image 1200x630 |
+| `06-film-stills` | 28 | Frames from the four films, 1920x1080 |
+
+Rebuild the tree with `python tools/build_png.py`. Regenerate the source art first if the markets should be fresh: serve the site, open the exporters, run `LOGOS.all()` and `EXPORT.all()`.
 
 ## Video files
 

@@ -1,0 +1,192 @@
+"""Build the PNG deliverable tree.
+
+Everything anyone needs to use lands in png/ as flat PNG files in numbered
+folders, with a contact sheet per folder so the whole set can be browsed in an
+image viewer. No page to open, no renderer to run.
+
+    python tools/build_png.py
+
+Regenerating the source art still happens in the browser exporters, but the
+output of this script is the thing that gets handed over.
+"""
+import os
+import shutil
+import subprocess
+import glob
+from PIL import Image, ImageDraw, ImageFont
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PNG = os.path.join(ROOT, "png")
+
+FOLDERS = [
+    ("01-logo",          "The mark, lockups and wordmarks"),
+    ("02-icons",         "Favicons and app icons"),
+    ("03-social",        "Signal, hook, explainer and stat cards for posting"),
+    ("04-profile",       "X header and avatar"),
+    ("05-link-preview",  "The card a shared link shows"),
+    ("06-film-stills",   "Frames pulled from the four films"),
+    ("00-contact-sheets","One image per folder, everything at a glance"),
+]
+
+BLACK = (8, 9, 10)
+WHITE = (242, 239, 233)
+ACID = (204, 255, 0)
+DIM = (138, 143, 148)
+
+
+def font(size, mono=False):
+    names = (["consola.ttf", "cour.ttf"] if mono else ["segoeuib.ttf", "arialbd.ttf", "arial.ttf"])
+    for n in names:
+        p = os.path.join(r"C:\Windows\Fonts", n)
+        if os.path.exists(p):
+            try:
+                return ImageFont.truetype(p, size)
+            except OSError:
+                pass
+    return ImageFont.load_default()
+
+
+def fresh():
+    if os.path.isdir(PNG):
+        shutil.rmtree(PNG)
+    for name, _ in FOLDERS:
+        os.makedirs(os.path.join(PNG, name), exist_ok=True)
+
+
+def copy(src_glob, dest, rename=None):
+    n = 0
+    for f in sorted(glob.glob(src_glob)):
+        base = os.path.basename(f)
+        if rename:
+            base = rename(base)
+        shutil.copy2(f, os.path.join(PNG, dest, base))
+        n += 1
+    return n
+
+
+def stills():
+    """Pull frames from each film so the films are postable as images too."""
+    films = [
+        ("polymarct-trailer-1080p.mp4", "trailer", [0.2, 2.0, 5.0, 9.8, 13.6, 17.0, 21.0, 23.0, 27.8]),
+        ("polymarct-01-ident-1080p.mp4", "ident", [2.3, 4.4, 6.5, 9.0, 11.5, 14.2]),
+        ("polymarct-02-flow-1080p.mp4", "flow", [2.6, 7.5, 9.6, 13.0, 17.0, 20.5, 24.5]),
+        ("polymarct-03-network-1080p.mp4", "network", [3.0, 8.4, 11.0, 13.5, 17.5, 22.5]),
+    ]
+    out = os.path.join(PNG, "06-film-stills")
+    n = 0
+    for fn, tag, times in films:
+        src = os.path.join(ROOT, "dist", fn)
+        if not os.path.exists(src):
+            continue
+        for t in times:
+            dst = os.path.join(out, "%s-%05.1fs.png" % (tag, t))
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(t), "-i", src,
+                            "-frames:v", "1", dst], check=False)
+            n += 1
+    return n
+
+
+def contact_sheet(folder, title, cols=4, cell=520):
+    files = sorted(f for f in glob.glob(os.path.join(PNG, folder, "*.png")))
+    if not files:
+        return None
+    pad, head, label = 24, 150, 34
+    rows = (len(files) + cols - 1) // cols
+    w = pad + cols * (cell + pad)
+    h = head + rows * (cell + label + pad) + pad
+    sheet = Image.new("RGB", (w, h), BLACK)
+    d = ImageDraw.Draw(sheet)
+    d.text((pad, 44), "POLYMARCT", font=font(46), fill=WHITE)
+    d.text((pad + 300, 58), title.upper(), font=font(20, True), fill=DIM)
+    d.text((pad, 104), "%d FILES  //  %s" % (len(files), folder), font=font(18, True), fill=ACID)
+    d.line([(pad, head - 18), (w - pad, head - 18)], fill=(40, 43, 46))
+
+    for i, f in enumerate(files):
+        im = Image.open(f).convert("RGBA")
+        im.thumbnail((cell, cell), Image.LANCZOS)
+        x = pad + (i % cols) * (cell + pad)
+        y = head + (i // cols) * (cell + label + pad)
+        # a chequer behind anything transparent, so a transparent mark still reads
+        tile = Image.new("RGB", (cell, cell), (18, 20, 23))
+        td = ImageDraw.Draw(tile)
+        for cx in range(0, cell, 24):
+            for cy in range(0, cell, 24):
+                if (cx // 24 + cy // 24) % 2 == 0:
+                    td.rectangle([cx, cy, cx + 23, cy + 23], fill=(24, 27, 30))
+        tile.paste(im, ((cell - im.width) // 2, (cell - im.height) // 2), im)
+        sheet.paste(tile, (x, y))
+        d.rectangle([x, y, x + cell - 1, y + cell - 1], outline=(46, 49, 52))
+        name = os.path.basename(f)[:-4]
+        if len(name) > 34:
+            name = name[:33] + "\u2026"
+        d.text((x, y + cell + 9), name, font=font(15, True), fill=DIM)
+
+    out = os.path.join(PNG, "00-contact-sheets", folder + ".png")
+    sheet.save(out, optimize=True)
+    return out
+
+
+def index_txt(counts):
+    lines = [
+        "POLYMARCT // PNG DELIVERABLES",
+        "",
+        "Everything here is a PNG. Open the folder, use the file.",
+        "The contact sheets in 00 show every image in a folder at a glance.",
+        "",
+    ]
+    for name, note in FOLDERS:
+        lines.append("%-20s %4d files   %s" % (name, counts.get(name, 0), note))
+    lines += [
+        "",
+        "Sizes",
+        "  logo            16 to 1024 px square, plus lockups to 2400 wide",
+        "  icons           16 / 32 / 48 / 180 / 192 / 512",
+        "  social          1600x900 for the timeline, 1080x1350 for feed footprint",
+        "  profile         header 1500x500, avatar 400x400",
+        "  link preview    1200x630",
+        "  film stills     1920x1080",
+        "",
+        "Rebuilding",
+        "  python tools/build_png.py",
+        "",
+        "Rules that travel with these files",
+        "  no promised returns, no guaranteed, no risk free, no APY",
+        "  the domain stays off every asset until the real one is live",
+        "  USDC on Arc is the only asset the product accepts",
+    ]
+    open(os.path.join(PNG, "INDEX.txt"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
+
+
+def main():
+    fresh()
+    counts = {}
+    counts["01-logo"] = copy(os.path.join(ROOT, "brand", "logo", "png", "*.png"), "01-logo")
+    counts["02-icons"] = copy(os.path.join(ROOT, "assets", "icons", "*.png"), "02-icons")
+
+    social = 0
+    for pattern in ("signal-*.png", "hook-*.png", "explainer-*.png", "stat-*.png", "portrait-*.png"):
+        social += copy(os.path.join(ROOT, "content", pattern), "03-social")
+    counts["03-social"] = social
+
+    counts["04-profile"] = copy(os.path.join(ROOT, "content", "profile-*.png"), "04-profile")
+    counts["05-link-preview"] = copy(os.path.join(ROOT, "assets", "og-image.png"), "05-link-preview")
+    counts["06-film-stills"] = stills()
+
+    sheets = 0
+    for name, note in FOLDERS:
+        if name.startswith("00"):
+            continue
+        cols = 3 if name in ("03-social", "06-film-stills", "04-profile", "05-link-preview") else 4
+        if contact_sheet(name, note, cols=cols):
+            sheets += 1
+    counts["00-contact-sheets"] = sheets
+
+    index_txt(counts)
+    total = sum(counts.values())
+    for name, _ in FOLDERS:
+        print("%-20s %d" % (name, counts.get(name, 0)))
+    print("total %d PNG files in %s" % (total, PNG))
+
+
+if __name__ == "__main__":
+    main()
